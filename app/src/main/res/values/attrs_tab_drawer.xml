@@ -1,0 +1,10 @@
+<resources>
+    <declare-styleable name="TabDrawer">
+        <attr name="tabIcon" format="string" />
+        <attr name="tabTop" format="dimension"/>
+        <attr name="tabBottom" format="dimension"/>
+        <attr name="tabWidth" format="dimension"/>
+        <attr name="tabPadding" format="dimension"/>
+        <attr name="childSpacing" format="dimension"/>
+    </declare-styleable>
+</resources>

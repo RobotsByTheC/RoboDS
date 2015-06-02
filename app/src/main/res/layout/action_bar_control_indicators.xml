@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="left|center_vertical">
+
+
+        <TextView
+            android:id="@+id/voltage_display"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="00.00v"
+            android:textColor="#FFF"
+            android:gravity="left|center_vertical"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="10dp"/>
+
+        <view
+            android:id="@+id/connection_indicator"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            class="littlebot.robods.ConnectionIndicator" />
+
+</LinearLayout>

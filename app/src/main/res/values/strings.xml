@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">RoboDS</string>
+    <string name="action_edit_layout">Edit Layout</string>
+    <string name="action_switch_layout">Switch Layout</string>
+    <string name="title_activity_layout_editor">Layout Editor</string>
+    <string name="title_activity_layout_switcher">Change Layouts</string>
+
+</resources>

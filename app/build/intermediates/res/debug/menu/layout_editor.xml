@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".LayoutEditorActivity">
+
+    <item
+        android:title="Edit"
+        app:showAsAction="always"
+        android:icon="@android:drawable/ic_menu_edit"/>
+
+    <item
+        android:title="Delete"
+        app:showAsAction="always"
+        android:icon="@android:drawable/ic_menu_delete"/>
+
+    <item
+        android:title="Layout Settings"
+        app:showAsAction="never"/>
+</menu>
+<!-- From: file:/home/raystubbs/AndroidStudioProjects/RoboDS/app/src/main/res/menu/layout_editor.xml -->
