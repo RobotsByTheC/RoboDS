@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
@@ -15,7 +17,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * Created by ben on 6/4/15.
+ * A class used to manage {@link DSLayout}s and their saved states.
+ *
+ * @author Ben Wolsieffer
  */
 public class LayoutManager {
 
@@ -76,20 +80,6 @@ public class LayoutManager {
         startOperation(initOperation, null, null);
     }
 
-    private final Operation<Void, Void> initOperation = new Operation<Void, Void>() {
-        @Override
-        public Void run(Void param) {
-            layoutDirectory.mkdirs();
-
-            SharedPreferences prefs = context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
-            DSLayout prefsCurrentLayout = getLayout(prefs.getString(CURRENT_LAYOUT_KEY, "Default"));
-            if (prefsCurrentLayout != null) {
-                setCurrentLayoutImpl(prefsCurrentLayout);
-            }
-            return null;
-        }
-    };
-
     private <Parameter, Result> void startOperation(Operation<Parameter, Result> operation, Parameter param, OperationCallback<Result> callback) {
         synchronized (operationThread) {
             while (operationHandler == null) {
@@ -102,8 +92,29 @@ public class LayoutManager {
         operationHandler.sendMessage(operationHandler.obtainMessage(operation.id, 0, 0, new Object[]{operation, param, callback}));
     }
 
-    public String[] getLayoutNames() {
-        return layoutDirectory.list();
+    private final Operation<Void, Void> initOperation = new Operation<Void, Void>() {
+        @Override
+        public Void run(Void param) {
+            layoutDirectory.mkdirs();
+
+            SharedPreferences prefs = context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+            DSLayout prefsCurrentLayout = getLayoutImpl(prefs.getString(CURRENT_LAYOUT_KEY, "Default"));
+            if (prefsCurrentLayout != null) {
+                setCurrentLayoutImpl(prefsCurrentLayout);
+            }
+            return null;
+        }
+    };
+
+    private final Operation<Void, String[]> getLayoutNamesOperation = new Operation<Void, String[]>() {
+        @Override
+        public String[] run(Void param) {
+            return layoutDirectory.list();
+        }
+    };
+
+    public void getLayoutNames(OperationCallback<String[]> callback) {
+        startOperation(getLayoutNamesOperation, null, callback);
     }
 
     private Operation<Void, DSLayout> getCurrentLayoutOperation = new Operation<Void, DSLayout>() {
@@ -115,7 +126,8 @@ public class LayoutManager {
 
     /**
      * Gets the currently selected layout. This method does not normally block very long, but it
-     * will in the case that the current layout is still being loaded, so the callback is necessary.
+     * will in the case that the current layout is still being loaded, so the callback is
+     * necessary.
      *
      * @param callback the callback that is called when the layout is ready
      */
@@ -143,15 +155,19 @@ public class LayoutManager {
         prefs.commit();
     }
 
-    public void setCurrentLayout(DSLayout layout) {
-        startOperation(setCurrentLayoutOperation, layout, null);
+    public void setCurrentLayout(@Nullable DSLayout layout) {
+        setCurrentLayout(layout, null);
+    }
+
+    public void setCurrentLayout(@Nullable DSLayout layout, @Nullable OperationCallback<Void> callback) {
+        startOperation(setCurrentLayoutOperation, layout, callback);
     }
 
     private final Operation<String, DSLayout> getLayoutOperation = new Operation<String, DSLayout>() {
 
         @Override
         public DSLayout run(String name) {
-            return getLayout(name);
+            return getLayoutImpl(name);
         }
     };
 
@@ -162,7 +178,7 @@ public class LayoutManager {
      * @param name the name of the layout to get
      * @return the layout, or null if the layout does not exist
      */
-    private DSLayout getLayout(String name) {
+    private DSLayout getLayoutImpl(String name) {
         File layoutFile = getLayoutFile(name);
         DSLayout layout = null;
 
@@ -186,11 +202,11 @@ public class LayoutManager {
         return layout;
     }
 
-    public void getLayout(String name, OperationCallback<DSLayout> callback) throws IOException {
+    public void getLayoutImpl(@NonNull String name, @Nullable OperationCallback<DSLayout> callback) throws IOException {
         startOperation(getLayoutOperation, name, callback);
     }
 
-    private Operation<DSLayout, Void> saveLayoutOperation = new Operation<DSLayout, Void>() {
+    private final Operation<DSLayout, Void> saveLayoutOperation = new Operation<DSLayout, Void>() {
         @Override
         public Void run(DSLayout layout) {
             ObjectOutputStream output = null;
@@ -211,26 +227,57 @@ public class LayoutManager {
         }
     };
 
-    public void saveLayout(DSLayout layout, OperationCallback<Void> callback) {
+    public void saveLayout(@NonNull DSLayout layout) {
+        saveLayout(layout, null);
+    }
+
+    public void saveLayout(@NonNull DSLayout layout, @Nullable OperationCallback<Void> callback) {
         startOperation(saveLayoutOperation, layout, callback);
     }
 
-    public void removeLayout(String name) {
-        getLayoutFile(name).delete();
+    private final Operation<String, Void> removeLayoutOperation = new Operation<String, Void>() {
+        @Override
+        public Void run(String name) {
+            getLayoutFile(name).delete();
+            return null;
+        }
+    };
+
+    public void removeLayout(@NonNull String name) {
+        removeLayout(name, null);
     }
 
-    private File getLayoutFile(String name) {
+    public void removeLayout(@NonNull String name, @Nullable OperationCallback<Void> callback) {
+        startOperation(removeLayoutOperation, name, callback);
+    }
+
+    private @NonNull File getLayoutFile(@NonNull String name) {
         return new File(layoutDirectory.getAbsolutePath() + "/" + name);
     }
 
+    /**
+     * The singleton instance.
+     */
     private static LayoutManager instance;
 
-    public static void initialize(Context context) {
+    /**
+     * Initializes the {@link LayoutManager} instance. This will return almost immediately, but the
+     * {@link LayoutManager} may still be initializing in the background.
+     *
+     * @param context a {@link Context} to use to get the files directory
+     */
+    public static void initialize(@NonNull Context context) {
         if (instance == null) {
             instance = new LayoutManager(context);
         }
     }
 
+    /**
+     * Gets the single instance of the {@link LayoutManager}. {@link #initialize(Context)} must be
+     * called at least once before this method.
+     *
+     * @return the instance of the {@link LayoutManager}
+     */
     public static LayoutManager getInstance() {
         if (instance == null) {
             throw new IllegalStateException("LayoutManager must be initialized before use.");

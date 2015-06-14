@@ -136,14 +136,8 @@ public class LayoutEditorActivity extends AppCompatActivity {
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String oldName = loadedLayout.getName();
+                final String oldName = loadedLayout.getName();
                 String newName = name.getText().toString();
-
-                if (!oldName.equals(newName)) {
-                    loadedLayout.setName(newName);
-                    LayoutManager lm = LayoutManager.getInstance();
-                    lm.removeLayout(oldName);
-                }
                 loadedLayout.setRioIP(roboRIOIP.getText().toString());
 
                 if (orientLandRB.isChecked()) {
@@ -152,6 +146,18 @@ public class LayoutEditorActivity extends AppCompatActivity {
                     loadedLayout.setOrientation(DSLayout.Orientation.PORTRAIT);
                 }
                 updateOrientation();
+
+                if (!oldName.equals(newName)) {
+                    loadedLayout.setName(newName);
+                    final LayoutManager lm = LayoutManager.getInstance();
+                    lm.saveLayout(loadedLayout, new LayoutManager.OperationCallback<Void>() {
+                        @Override
+                        public void finished(Void r) {
+                            lm.setCurrentLayout(loadedLayout);
+                            lm.removeLayout(oldName);
+                        }
+                    });
+                }
                 dialog.dismiss();
             }
         });
