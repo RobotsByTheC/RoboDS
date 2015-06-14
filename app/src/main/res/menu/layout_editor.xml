@@ -4,16 +4,27 @@
     tools:context=".LayoutEditorActivity">
 
     <item
-        android:title="Edit"
-        app:showAsAction="always"
-        android:icon="@android:drawable/ic_menu_edit"/>
+        android:title="@string/layout_edit"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_edit"
+        android:id="@+id/layout_editor_menu_edit"
+        android:onClick="editControl"/>
 
     <item
-        android:title="Delete"
-        app:showAsAction="always"
-        android:icon="@android:drawable/ic_menu_delete"/>
+        android:title="@string/layout_delete"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:id="@+id/layout_editor_menu_delete"
+        android:onClick="deleteControl"/>
 
     <item
-        android:title="Layout Settings"
-        app:showAsAction="never"/>
+        android:title="@string/layout_settings"
+        app:showAsAction="never"
+        android:id="@+id/layout_editor_menu_settings"
+        android:onClick="showLayoutSettings"/>
+    <item
+        android:title="@string/clear"
+        app:showAsAction="never"
+        android:id="@+id/layout_editor_menu_clear"
+        android:onClick="clearLayout"/>
 </menu>

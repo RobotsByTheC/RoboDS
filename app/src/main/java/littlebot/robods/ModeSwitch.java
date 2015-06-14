@@ -28,7 +28,7 @@ public class ModeSwitch extends ToggleButton {
         init();
     }
 
-    private void init(){
+    private void init() {
         this.setText("Teleop");
         this.setTextOff("Teleop");
         this.setTextOn("Auto");
@@ -37,10 +37,10 @@ public class ModeSwitch extends ToggleButton {
         this.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(listener != null){
-                    if(isChecked){
+                if (listener != null) {
+                    if (isChecked) {
                         listener.onAutoEnabled();
-                    }else{
+                    } else {
                         listener.onTeleopEnabled();
                     }
                 }
@@ -48,16 +48,17 @@ public class ModeSwitch extends ToggleButton {
         });
     }
 
-    public void setModeChangeListener(ModeChangeListener l){
+    public void setModeChangeListener(ModeChangeListener l) {
         listener = l;
     }
 
-    public interface ModeChangeListener{
+    public interface ModeChangeListener {
         void onTeleopEnabled();
+
         void onAutoEnabled();
     }
 
-    public boolean isAuto(){
+    public boolean isAuto() {
         return this.isChecked();
     }
 }

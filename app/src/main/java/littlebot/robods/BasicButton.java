@@ -1,36 +1,52 @@
 package littlebot.robods;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.util.HashMap;
+
 /**
- * Created by raystubbs on 23/03/15.
+ * A basic implementation of a square button.
+ *
+ * @author raystubbs
+ * @author Ben Wolsieffer
  */
 public class BasicButton extends ButtonView {
 
-    private final float CORNER_ROUNDNESS = 10;
+    private static final String TEXT_PROPERTY = "text";
+    private static final String WIDTH_PROPERTY = "width";
+    private static final String HEIGHT_PROPERTY = "height";
 
-    private int pressedColor = Color.LTGRAY;
-    private int releasedColor = Color.GRAY;
+    private static final float CORNER_ROUNDNESS = 10;
+
+    private static final int PRESSED_COLOR = Color.LTGRAY;
+    private static final int RELEASED_COLOR = Color.GRAY;
 
     private Paint paint;
     private RectF drawBounds;
 
+    private String text = "Button";
+
+    private TextView joyNumTV;
+    private TextView buttonNumTV;
+    private TextView textTV;
+    private TextView widthTV;
+    private TextView heightTV;
+
     public BasicButton(Context context) {
         super(context);
         init();
-        this.setLayoutParams(new ViewGroup.LayoutParams(100, 50));
     }
 
     public BasicButton(Context context, AttributeSet attrs) {
@@ -43,46 +59,62 @@ public class BasicButton extends ButtonView {
         init();
     }
 
-
-    private void init(){
+    private void init() {
         setBackgroundColor(Color.alpha(0));
         paint = new Paint();
         paint.setTextSize(20);
         paint.setFakeBoldText(true);
         paint.setTextAlign(Paint.Align.CENTER);
+
+        ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.basic_button_dialog, null));
+        joyNumTV = (TextView) editDialogLayout.findViewById(R.id.joy_num_text);
+        buttonNumTV = (TextView) editDialogLayout.findViewById(R.id.button_num_text);
+        textTV = (TextView) editDialogLayout.findViewById(R.id.button_text);
+        widthTV = (TextView) editDialogLayout.findViewById(R.id.width_text);
+        heightTV = (TextView) editDialogLayout.findViewById(R.id.height_text);
+        setEditDialogLayout(editDialogLayout);
     }
 
     @Override
-    public void onSizeChanged(int w, int h, int oldw, int oldh){
+    protected void resetEditDialog() {
+        joyNumTV.setText(Integer.toString(getJoystickNumber()));
+        buttonNumTV.setText(Integer.toString(getButtonNumber()));
+        textTV.setText(getText());
+        RelativeLayout.LayoutParams lp = getLayoutParams();
+        widthTV.setText(Integer.toString(lp.width));
+        heightTV.setText(Integer.toString(lp.height));
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    @Override
+    public void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
         drawBounds = new RectF(0, 0, w, h);
-
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if(isPressed()){
-            paint.setColor(pressedColor);
-        }else{
-            paint.setColor(releasedColor);
+        if (isButtonPressed()) {
+            paint.setColor(PRESSED_COLOR);
+        } else {
+            paint.setColor(RELEASED_COLOR);
         }
-
         canvas.drawRoundRect(drawBounds, CORNER_ROUNDNESS, CORNER_ROUNDNESS, paint);
 
         paint.setColor(Color.BLACK);
-        canvas.drawText(getText(), this.getWidth()/2, this.getHeight()/2, paint);
+        canvas.drawText(getText(), this.getWidth() / 2, this.getHeight() / 2, paint);
 
-        if(isSelected()){
-            paint.setColor(Color.argb(125, 0, 255, 0));
+        if (isSelected()) {
+            paint.setColor(SELECTED_COLOR);
             canvas.drawRoundRect(drawBounds, CORNER_ROUNDNESS, CORNER_ROUNDNESS, paint);
         }
-
-    }
-
-    @Override
-    public ControlView clone() {
-        return new BasicButton(this.getContext());
     }
 
     @Override
@@ -91,69 +123,52 @@ public class BasicButton extends ButtonView {
     }
 
     @Override
-    public void showEditDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
-        View dialogView = ((Activity)this.getContext()).getLayoutInflater().inflate(R.layout.basic_button_dialog, null);
-
-        final TextView joyNumTV = (TextView)dialogView.findViewById(R.id.joy_num_text);
-        final TextView buttonNumTV = (TextView)dialogView.findViewById(R.id.button_num_text);
-        final TextView textTV = (TextView)dialogView.findViewById(R.id.button_text);
-        final TextView widthTV = (TextView)dialogView.findViewById(R.id.width_text);
-        final TextView heightTV = (TextView)dialogView.findViewById(R.id.height_text);
-
-        joyNumTV.setText(Integer.toString(this.getJoystickNumber()));
-        buttonNumTV.setText(Integer.toString(this.getButtonNumber()));
-        textTV.setText(getText());
-
-        ViewGroup.LayoutParams lp = this.getLayoutParams();
-        widthTV.setText(Integer.toString(lp.width));
-        heightTV.setText(Integer.toString(lp.height));
-
-        builder.setView(dialogView);
-
-        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try{
-                    setJoystickNumber(Integer.parseInt(joyNumTV.getText().toString()));
-                    setButtonNumber(Integer.parseInt(buttonNumTV.getText().toString()));
-                    setText(textTV.getText().toString());
-                    getLayoutParams().width = Integer.parseInt(widthTV.getText().toString());
-                    getLayoutParams().height = Integer.parseInt(heightTV.getText().toString());
-                    requestLayout();
-                    dialog.dismiss();
-                }catch(NumberFormatException e){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setMessage("Invalid number format, try again");
-                }catch(Exception e){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setMessage(e.getMessage());
-                }
-
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        builder.show();
+    public void onEdit(ViewGroup editDialogLayout) {
+        try {
+            setJoystickNumber(Integer.parseInt(joyNumTV.getText().toString()));
+            setButtonNumber(Integer.parseInt(buttonNumTV.getText().toString()));
+            setText(textTV.getText().toString());
+            setSize(Integer.parseInt(widthTV.getText().toString()), Integer.parseInt(heightTV.getText().toString()));
+        } catch (NumberFormatException e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage("Invalid number format, try again");
+        } catch (Exception e) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage(e.getMessage());
+        }
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
+    public void readProperties(HashMap<String, Object> properties) {
+        super.readProperties(properties);
+        setText((String) properties.get(TEXT_PROPERTY));
+        setSize((Integer) properties.get(WIDTH_PROPERTY), (Integer) properties.get(HEIGHT_PROPERTY));
+    }
 
+    @Override
+    public void writeProperties(HashMap<String, Object> properties) {
+        super.writeProperties(properties);
+        properties.put(TEXT_PROPERTY, getText());
+        properties.put(WIDTH_PROPERTY, getWidth());
+        properties.put(HEIGHT_PROPERTY, getHeight());
+    }
 
-        if(!isEditing()){
-            switch(event.getAction()){
+    public void setSize(int width, int height) {
+        RelativeLayout.LayoutParams lp = getLayoutParams();
+        getLayoutParams().width = width;
+        getLayoutParams().height = height;
+        requestLayout();
+    }
+
+    @Override
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
+        if (!isEditing()) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    setPressed(true);
+                    setButtonPressed(true);
                     break;
                 case MotionEvent.ACTION_UP:
-                    setPressed(false);
+                    setButtonPressed(false);
                     break;
             }
             invalidate();

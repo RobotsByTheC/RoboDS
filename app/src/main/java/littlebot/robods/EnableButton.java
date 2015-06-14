@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,13 +36,13 @@ public class EnableButton extends View {
         init(context);
     }
 
-    private void init(Context context){
+    private void init(Context context) {
 
-        int size = (int)context.getResources().getDimension(R.dimen.action_icon_size);
+        int size = (int) context.getResources().getDimension(R.dimen.action_icon_size);
         this.setLayoutParams(new ViewGroup.LayoutParams(size, size));
 
-        enabledDrawable = context.getResources().getDrawable(R.drawable.enable_button_enabled);
-        disabledDrawable = context.getResources().getDrawable(R.drawable.enable_button_disabled);
+        enabledDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.enable_button_enabled, null);
+        disabledDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.enable_button_disabled, null);
 
         Rect bounds = new Rect(0, 0, size, size);
         enabledDrawable.setBounds(bounds);
@@ -53,8 +54,8 @@ public class EnableButton extends View {
             public void onClick(View v) {
                 enabled = !enabled;
 
-                for(EnableListener l : listeners){
-                    if(enabled)
+                for (EnableListener l : listeners) {
+                    if (enabled)
                         l.onEnabled();
                     else
                         l.onDisabled();
@@ -66,30 +67,31 @@ public class EnableButton extends View {
     }
 
     @Override
-    public void onDraw(Canvas canvas){
+    public void onDraw(Canvas canvas) {
 
-        if(enabled){
+        if (enabled) {
             enabledDrawable.draw(canvas);
-        }else{
+        } else {
             disabledDrawable.draw(canvas);
         }
     }
 
-    public void addEnableListener(EnableListener l){
+    public void addEnableListener(EnableListener l) {
         listeners.add(l);
     }
 
-    public interface EnableListener{
+    public interface EnableListener {
         void onEnabled();
+
         void onDisabled();
     }
 
-    public void setEnabled(boolean b){
+    public void setEnabled(boolean b) {
         enabled = b;
         invalidate();
     }
 
-    public boolean isEnabled(){
+    public boolean isEnabled() {
         return enabled;
     }
 }

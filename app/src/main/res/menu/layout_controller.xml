@@ -1,16 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MyActivity" >
+    tools:context=".DriverStationActivity" >
 
     <item android:id="@+id/action_enable"
-        android:title="Enable-Disable"
+        android:title="Enable/Disable"
         app:showAsAction="always"
         app:actionLayout="@layout/action_bar_control_actions"
         />
 
     <item android:id="@+id/action_switch_layout"
         android:title="@string/action_switch_layout"
+        android:visible="false"
         app:showAsAction="never"/>
 
     <item android:id="@+id/action_edit_layout"

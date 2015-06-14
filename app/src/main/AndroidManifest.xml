@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MyActivity"
+            android:name=".DriverStationActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,18 +19,18 @@
         <activity
             android:name=".LayoutEditorActivity"
             android:label="@string/title_activity_layout_editor"
-            android:parentActivityName=".MyActivity" >
+            android:parentActivityName=".DriverStationActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="littlebot.robods.MyActivity" />
+                android:value=".DriverStationActivity" />
         </activity>
         <activity
             android:name=".LayoutSwitcherActivity"
             android:label="@string/title_activity_layout_switcher"
-            android:parentActivityName=".MyActivity" >
+            android:parentActivityName=".DriverStationActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="littlebot.robods.MyActivity" />
+                android:value=".DriverStationActivity" />
         </activity>
     </application>
 

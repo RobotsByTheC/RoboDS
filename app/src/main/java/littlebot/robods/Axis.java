@@ -12,26 +12,26 @@ public class Axis {
     private int value;
     private AxisListener listener;
 
-    public Axis(int joystickNumber, int axisNumber, boolean inverted){
+    public Axis(int joystickNumber, int axisNumber, boolean inverted) {
         this.joystickNumber = joystickNumber;
         this.axisNumber = axisNumber;
         this.inverted = inverted;
     }
 
-    public int get(){
+    public int get() {
         return value;
     }
 
-    public void set(int value){
+    public void set(int value) {
 
 
-        this.value = (inverted)?-value:value;
+        this.value = (inverted) ? -value : value;
 
-        if(listener != null)
+        if (listener != null)
             listener.valueChanged(value);
     }
 
-    public void setAxisListener(AxisListener listener){
+    public void setAxisListener(AxisListener listener) {
         this.listener = listener;
     }
 
@@ -59,7 +59,7 @@ public class Axis {
         this.inverted = inverted;
     }
 
-    public interface AxisListener{
+    public interface AxisListener {
         void valueChanged(int value);
     }
 

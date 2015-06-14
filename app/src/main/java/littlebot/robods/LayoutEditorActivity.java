@@ -1,10 +1,12 @@
 package littlebot.robods;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,288 +15,281 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import littlebot.views.TabDrawer;
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 
-public class LayoutEditorActivity extends ActionBarActivity {
+public class LayoutEditorActivity extends AppCompatActivity {
 
-    private ViewGroup mContentLayout;
-    private TabDrawer mJoystickDrawer,
-                      mButtonDrawer,
-                      mDigitalDisplayDrawer,
-                      mAnalogDisplayDrawer;
+    private static final String TAG = LayoutEditorActivity.class.getName();
 
-    //Layout properties
-    private String name = "Default";
-    private DSLayout.Orientation orientation = DSLayout.Orientation.ORIENTATION_LANDSCAPE;
-    private String rioIp = "10.26.57.22";
-    private int maxViewFPS = 30;
+    private ControlLayout controlLayout;
+    private FloatingActionsMenu addButtonMenu;
+    private FloatingActionButton joystickAddButton,
+            buttonAddButton;
+    private MenuItem menuEditItem;
+    private MenuItem menuDeleteItem;
+    private DSLayout loadedLayout;
 
     private ControlView selectedView;
-
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LayoutManager.initialize(this);
 
-        mContentLayout = (ViewGroup)this.getLayoutInflater().inflate(R.layout.activity_layout_editor, null);
-        setContentView(mContentLayout);
-        mJoystickDrawer = (TabDrawer)this.findViewById(R.id.drawer_joysticks);
-        mButtonDrawer = (TabDrawer)this.findViewById(R.id.drawer_buttons);
-        mDigitalDisplayDrawer = (TabDrawer)this.findViewById(R.id.drawer_display_digital);
-        mAnalogDisplayDrawer = (TabDrawer)this.findViewById(R.id.drawer_display_analog);
+        setContentView(R.layout.activity_layout_editor);
 
+        controlLayout = new ControlLayout(this);
+        controlLayout.setControlListener(new ControlLayout.ControlListener() {
+            @Override
+            public void controlAdded(ControlView control) {
+                control.setSelectedListener(selectionListener);
+                control.setEditing(true);
+            }
+        });
+        addButtonMenu = (FloatingActionsMenu) findViewById(R.id.editor_add_menu);
+        joystickAddButton = (FloatingActionButton) findViewById(R.id.editor_joystick_add_button);
+        buttonAddButton = (FloatingActionButton) findViewById(R.id.editor_button_add_button);
 
-
-        mContentLayout.setOnDragListener(new View.OnDragListener() {
+        controlLayout.setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View v, DragEvent event) {
-                switch (event.getAction()){
+                switch (event.getAction()) {
                     case DragEvent.ACTION_DROP:
-                        ControlView view = (ControlView)event.getLocalState();
-                        ViewGroup.LayoutParams lp = view.getLayoutParams();
-                        ViewGroup parent = ((ViewGroup)view.getParent());
-                        if(parent instanceof TabDrawer){
-
-                            view = view.clone();
-                            view.setX(event.getX() - lp.width/2);
-                            view.setY(event.getY() - lp.height/2);
-                            view.showEditDialog();
-                            mContentLayout.addView(view, mContentLayout.getChildCount() - 4);
-                        }else if(parent.equals(mContentLayout)){
-                            view.setX(event.getX() - lp.width/2);
-                            view.setY(event.getY() - lp.height/2);
-                            view.setSelectedListener(selectionListener);
-                        }
-
-
-
+                        final ControlView control = (ControlView) event.getLocalState();
+                        control.setPosition((int) event.getX(), (int) event.getY());
                 }
                 return true;
             }
         });
-
-
-        View.OnDragListener drawerDragListener = new View.OnDragListener() {
+        controlLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onDrag(View v, DragEvent event) {
-                return true;
+            public void onClick(View v) {
+                setSelectedControl(null);
             }
-        };
+        });
 
-        mJoystickDrawer.setOnDragListener(drawerDragListener);
-        mButtonDrawer.setOnDragListener(drawerDragListener);
-        mDigitalDisplayDrawer.setOnDragListener(drawerDragListener);
-        mAnalogDisplayDrawer.setOnDragListener(drawerDragListener);
-
-        //Get rid of any ControlViews already in mContentLayout
-        for(int i = 0 ; i < mContentLayout.getChildCount() ; i++){
-            View child = mContentLayout.getChildAt(i);
-            if(child instanceof ControlView){
-                mContentLayout.removeView(child);
-            }
-        }
-        //Setup the layout
-        File layoutFile = new File(this.getFilesDir() + "/layouts/Default");
-
-        if(layoutFile.exists()) {
-            try {
-                DSLayout layout = DSLayout.fromStream(new FileInputStream(layoutFile));
-                orientation = layout.getOrientation();
-                rioIp = layout.getRioIP();
-
-                //Add all the ControlViews from the layout to mContentLayout
-                for(int i = 0 ; i < layout.getNodeCount() ; i++){
-                    ControlView newChild = layout.getLayoutNode(i).inflate(this);
-                    newChild.setEditing(true);
-                    newChild.setSelectedListener(selectionListener);
-                    mContentLayout.addView(newChild, mContentLayout.getChildCount() - 4);
-                }
-
-                //Set the orientation, always landscape for now; switch is for future use
-                switch(layout.getOrientation()){
-                    case ORIENTATION_LANDSCAPE:
-                        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                        orientation = DSLayout.Orientation.ORIENTATION_LANDSCAPE;
-                        break;
-                    case ORIENTATION_PORTRAIT:
-                        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                        orientation = DSLayout.Orientation.ORIENTATION_PORTRAIT;
-                        break;
-                    case ORIENTATION_SENSOR:
-                        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
-                        orientation = DSLayout.Orientation.ORIENTATION_SENSOR;
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-
-            }
+        loadLayout();
+        ((ViewGroup) findViewById(R.id.editor_layout)).addView(controlLayout);
+        addButtonMenu.bringToFront();
     }
 
+    private void setupControl(final ControlView control) {
+        addButtonMenu.collapse();
+        final Dialog dialog = control.getEditDialog();
+        control.setEditListener(new ControlView.EditListener() {
+            @Override
+            public void onEdit(ViewGroup editDialogLayout) {
+                controlLayout.addControl(control);
+                control.setEditListener(null);
+            }
+        });
+        dialog.show();
+    }
+
+    public void createJoystick(View v) {
+        BasicJoystick joystick = new BasicJoystick(this);
+        setupControl(joystick);
+    }
+
+    public void createButton(View v) {
+        BasicButton button = new BasicButton(this);
+        setupControl(button);
+    }
+
+    public void editControl(MenuItem item) {
+        if (selectedView != null) {
+            selectedView.getEditDialog().show();
+        }
+    }
+
+    public void deleteControl(MenuItem item) {
+        if (selectedView != null) {
+            controlLayout.removeControl(selectedView);
+            setSelectedControl(null);
+        }
+    }
+
+    public void showLayoutSettings(MenuItem item) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(LayoutEditorActivity.this);
+        builder.setTitle("Layout Settings");
+
+        final View dialogView = getLayoutInflater().inflate(R.layout.layout_settings_dialog, null);
+        final TextView name = (TextView) dialogView.findViewById(R.id.layout_settings_name);
+        final TextView roboRIOIP = (TextView) dialogView.findViewById(R.id.layout_settings_roborio_ip);
+        final RadioButton orientLandRB = (RadioButton) dialogView.findViewById(R.id.layout_settings_orientation_landscape);
+        final RadioButton orientPortRB = (RadioButton) dialogView.findViewById(R.id.layout_settings_orientation_portrait);
+
+        if (loadedLayout.getOrientation() == DSLayout.Orientation.LANDSCAPE) {
+            orientLandRB.setChecked(true);
+        } else {
+            orientPortRB.setChecked(true);
+        }
+
+        name.setText(loadedLayout.getName());
+        roboRIOIP.setText(loadedLayout.getRioIP());
+
+        builder.setView(dialogView);
+
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String oldName = loadedLayout.getName();
+                String newName = name.getText().toString();
+
+                if (!oldName.equals(newName)) {
+                    loadedLayout.setName(newName);
+                    LayoutManager lm = LayoutManager.getInstance();
+                    lm.removeLayout(oldName);
+                }
+                loadedLayout.setRioIP(roboRIOIP.getText().toString());
+
+                if (orientLandRB.isChecked()) {
+                    loadedLayout.setOrientation(DSLayout.Orientation.LANDSCAPE);
+                } else {
+                    loadedLayout.setOrientation(DSLayout.Orientation.PORTRAIT);
+                }
+                updateOrientation();
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void clearLayout(MenuItem item) {
+        controlLayout.removeAllViews();
+        setSelectedControl(null);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.layout_editor, menu);
-        MenuItem editItem = menu.getItem(0);
-        MenuItem deleteItem = menu.getItem(1);
-        MenuItem settingsItem = menu.getItem(2);
+        menuEditItem = menu.findItem(R.id.layout_editor_menu_edit);
+        menuDeleteItem = menu.findItem(R.id.layout_editor_menu_delete);
 
-        editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                selectedView.showEditDialog();
-                selectedView.invalidate();
-                return true;
-            }
-        });
-
-        deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                mContentLayout.removeView(selectedView);
-                selectedView = null;
-                return true;
-            }
-        });
-
-        settingsItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(LayoutEditorActivity.this);
-                builder.setTitle("Layout Settings");
-
-                View dialogView = getLayoutInflater().inflate(R.layout.layout_settings_dialog, null);
-                final TextView rioIpTV = (TextView)dialogView.findViewById(R.id.rio_ip);
-                final RadioButton orientLandRB = (RadioButton)dialogView.findViewById(R.id.orientation_landscape);
-                RadioButton orientPortRB = (RadioButton)dialogView.findViewById(R.id.orientation_portrait);
-
-                if(orientation == DSLayout.Orientation.ORIENTATION_LANDSCAPE)
-                    orientLandRB.setChecked(true);
-                else
-                    orientPortRB.setChecked(true);
-
-                rioIpTV.setText(rioIp);
-
-                builder.setView(dialogView);
-
-                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        rioIp = rioIpTV.getText().toString();
-
-                        if(orientLandRB.isChecked()){
-                            orientation = DSLayout.Orientation.ORIENTATION_LANDSCAPE;
-                        }else{
-                            orientation = DSLayout.Orientation.ORIENTATION_PORTRAIT;
-                        }
-
-                        saveLayout();
-                        recreate();
-                        dialog.dismiss();
-                    }
-                });
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-                builder.show();
-
-                return true;
-            }
-        });
-
-
-        if(selectedView != null){
-            editItem.setVisible(true);
-            editItem.setEnabled(true);
-            deleteItem.setVisible(true);
-            deleteItem.setEnabled(true);
-        }else{
-            editItem.setVisible(false);
-            editItem.setEnabled(false);
-            deleteItem.setVisible(false);
-            deleteItem.setEnabled(false);
-        }
+        updateOptionsMenu();
         return true;
     }
 
-    private void saveLayout(){
+    private void updateOptionsMenu() {
+        if (selectedView != null) {
+            menuEditItem.setVisible(true);
+            menuEditItem.setEnabled(true);
+            menuDeleteItem.setVisible(true);
+            menuDeleteItem.setEnabled(true);
+        } else {
+            menuEditItem.setVisible(false);
+            menuEditItem.setEnabled(false);
+            menuDeleteItem.setVisible(false);
+            menuDeleteItem.setEnabled(false);
+        }
+    }
 
-        DSLayout layout = new DSLayout(name, orientation, rioIp, maxViewFPS);
-        layout.setRioIP(rioIp);
-        layout.setOrientation(orientation);
-        layout.addAllNodes(mContentLayout);
+    private void loadLayout() {
+        final LayoutManager lm = LayoutManager.getInstance();
+        lm.getCurrentLayout(new LayoutManager.OperationCallback<DSLayout>() {
+            @Override
+            public void finished(final DSLayout l) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        DSLayout layout = l;
+                        if (layout == null) {
+                            layout = new DSLayout();
+                            final DSLayout cLayout = layout;
+                            lm.saveLayout(layout, new LayoutManager.OperationCallback<Void>() {
+                                @Override
+                                public void finished(Void r) {
+                                    lm.setCurrentLayout(cLayout);
+                                }
+                            });
+                        }
+                        loadedLayout = layout;
 
-        File layoutsDir = new File(this.getFilesDir().getAbsolutePath() + "/layouts");
-        if(!layoutsDir.exists())
-            layoutsDir.mkdir();
-
-        File outFile = new File(layoutsDir.getAbsolutePath() + "/" + layout.getName());
-
-
-            try {
-                if(!outFile.exists())
-                    outFile.createNewFile();
-
-                layout.writeToFile(outFile);
-            } catch (IOException e) {
-                e.printStackTrace();
+                        controlLayout.load(layout);
+                        updateOrientation();
+                    }
+                });
             }
+        });
+    }
+
+    private void updateOrientation() {
+        int requestedOrientation;
+        switch (loadedLayout.getOrientation()) {
+            default:
+            case LANDSCAPE:
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+                break;
+            case PORTRAIT:
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+                break;
+        }
+        if (requestedOrientation != getRequestedOrientation()) {
+            setRequestedOrientation(requestedOrientation);
+        }
+    }
+
+    private void saveLayout() {
+        if (loadedLayout != null) {
+            controlLayout.save(loadedLayout);
+            LayoutManager.getInstance().saveLayout(loadedLayout, null);
+        }
     }
 
     //Save the layout what the user navigates back to the control activity
     @Override
-    public boolean onNavigateUp(){
+    public boolean onNavigateUp() {
         saveLayout();
         return super.onNavigateUp();
     }
 
     //Also save the layout if the activity exits without navigating up
     @Override
-    public void onStop(){
-        super.onStop();
+    public void onPause() {
+        super.onPause();
+        saveLayout();
+    }
 
+    private void setSelectedControl(@Nullable ControlView view) {
+        if (selectedView != view) {
+            if (view != null) {
+                view.setSelected(true);
+            } else {
+                selectedView.setSelected(false);
+            }
+        }
     }
 
     ////////////////////////////Selection Listener///////////////////////////////
-    final ControlView.SelectedListener selectionListener = new ControlView.SelectedListener() {
+    private final ControlView.SelectedListener selectionListener = new ControlView.SelectedListener() {
         @Override
         public void selected(ControlView v) {
-
+            ControlView oldSelectedView = selectedView;
             selectedView = v;
-
-            for(int i = 0 ; i < mContentLayout.getChildCount() ; i++){
-                View view = mContentLayout.getChildAt(i);
-
-                if(view instanceof ControlView && !view.equals(selectedView))
-                    ((ControlView)view).setSelected(false);
+            if (oldSelectedView != null && v != oldSelectedView) {
+                oldSelectedView.setSelected(false);
             }
-
-            LayoutEditorActivity.this.invalidateOptionsMenu();
+            updateOptionsMenu();
         }
 
         @Override
         public void deselected(ControlView v) {
-
-            if(v.equals(selectedView))
+            if(selectedView == v) {
                 selectedView = null;
-
-            invalidateOptionsMenu();
+                updateOptionsMenu();
+            }
         }
     };
 

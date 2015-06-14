@@ -18,7 +18,7 @@ import littlebot.robods.R;
 /**
  * TODO: document your custom view class.
  */
-public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureListener{
+public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureListener {
 
     private Rect mBodyBounds, mLayoutBounds, mTabBounds, mViewBounds, mMinViewBounds, mTabIconBounds;
     private Drawable mBodyBackground, mTabBackground, mTabIcon;
@@ -53,7 +53,7 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
         mTabBackground = context.getResources().getDrawable(R.drawable.tab_drawer_tab_background);
 
 
-        if(attrs != null){
+        if (attrs != null) {
             // Load attributes
             final TypedArray a = getContext().obtainStyledAttributes(
                     attrs, R.styleable.TabDrawer, defStyle, 0);
@@ -69,7 +69,7 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
 
             mTabPadding = a.getLayoutDimension(4, 5);
             mChildSpacing = a.getLayoutDimension(5, 100);
-            mScrollOffset = this.getChildCount()/2;
+            mScrollOffset = this.getChildCount() / 2;
 
             a.recycle();
         }
@@ -82,7 +82,7 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
     }
 
     @Override
-    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec){
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
@@ -90,11 +90,11 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
         int hMode = MeasureSpec.getMode(heightMeasureSpec);
 
         int maxHeight = 0;
-        for(int i = 0 ; i < this.getChildCount() ; i++){
+        for (int i = 0; i < this.getChildCount(); i++) {
             maxHeight = Math.max(maxHeight, this.getChildAt(i).getLayoutParams().height);
         }
 
-        if((maxHeight < height && hMode == MeasureSpec.AT_MOST) || hMode == MeasureSpec.UNSPECIFIED)
+        if ((maxHeight < height && hMode == MeasureSpec.AT_MOST) || hMode == MeasureSpec.UNSPECIFIED)
             height = maxHeight;
 
         mViewBounds = new Rect(0, 0, width, height);
@@ -102,10 +102,10 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
         mBodyBounds = new Rect(0, 0, mTabBounds.left, mViewBounds.bottom);
 
         mTabIconBounds = new Rect(mTabBounds.left + mTabPadding,
-                                    mTabBounds.top + mTabPadding,
-                                    mTabBounds.right - mTabPadding,
-                                    mTabBounds.bottom - mTabPadding
-                                 );
+                mTabBounds.top + mTabPadding,
+                mTabBounds.right - mTabPadding,
+                mTabBounds.bottom - mTabPadding
+        );
 
         mBodyBackground.setBounds(mBodyBounds);
         mTabBackground.setBounds(mTabBounds);
@@ -127,15 +127,15 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
         );
 
         int left = mLayoutBounds.left + mScrollOffset;
-        for(int i = 0 ; i < this.getChildCount() ; i++){
+        for (int i = 0; i < this.getChildCount(); i++) {
 
             View child = this.getChildAt(i);
-            View prevChild = this.getChildAt(i-1);
+            View prevChild = this.getChildAt(i - 1);
             int width = child.getLayoutParams().width;
             int height = child.getLayoutParams().height;
 
-            if(child.getVisibility() != GONE){
-                int top = mLayoutBounds.centerY() - height/2;
+            if (child.getVisibility() != GONE) {
+                int top = mLayoutBounds.centerY() - height / 2;
                 int right = left + width;
                 int bottom = top + height;
 
@@ -147,39 +147,38 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
     }
 
 
-
-    public void open(){
-        if(!opened){
+    public void open() {
+        if (!opened) {
             this.animate().translationX(mBodyBounds.width());
             opened = true;
         }
 
-        if(expansionListener != null)
+        if (expansionListener != null)
             expansionListener.opened();
     }
 
-    public void close(){
-        if(opened){
+    public void close() {
+        if (opened) {
             this.animate().translationX(0);
             opened = false;
         }
 
-        if(expansionListener != null)
+        if (expansionListener != null)
             expansionListener.closed();
     }
 
     @Override
-    public void onSizeChanged(int w, int h, int oldw, int oldh){
+    public void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
 
     @Override
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas) {
         mBodyBackground.draw(canvas);
         mTabBackground.draw(canvas);
 
-        if(mTabIcon != null){
+        if (mTabIcon != null) {
             mTabIcon.draw(canvas);
         }
         canvas.clipRect(mLayoutBounds);
@@ -189,10 +188,10 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
     private boolean dragging = false;
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
-        switch(event.getAction()){
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if(mTabBounds.contains((int)event.getX(), (int)event.getY()))
+                if (mTabBounds.contains((int) event.getX(), (int) event.getY()))
                     dragging = true;
                 break;
             case MotionEvent.ACTION_UP:
@@ -215,8 +214,8 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
 
-        if(mTabBounds.contains((int)e.getX(), (int)e.getY())){
-            if(!opened)
+        if (mTabBounds.contains((int) e.getX(), (int) e.getY())) {
+            if (!opened)
                 open();
             else
                 close();
@@ -228,12 +227,12 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        if(mLayoutBounds.contains((int)e1.getX(), (int)e2.getY()) && this.getChildCount() > 0){
+        if (mLayoutBounds.contains((int) e1.getX(), (int) e2.getY()) && this.getChildCount() > 0) {
 
             View firstChild = this.getChildAt(0);
             View lastChild = this.getChildAt(this.getChildCount() - 1);
-            if((distanceX > 0 && lastChild.getLeft() >= mLayoutBounds.centerX()) ||
-                    (distanceX < 0 && firstChild.getLeft() <= mLayoutBounds.centerX())){
+            if ((distanceX > 0 && lastChild.getLeft() >= mLayoutBounds.centerX()) ||
+                    (distanceX < 0 && firstChild.getLeft() <= mLayoutBounds.centerX())) {
                 mScrollOffset -= distanceX;
                 this.requestLayout();
             }
@@ -250,9 +249,9 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        if(velocityX > 500){
+        if (velocityX > 500) {
             open();
-        }else if(velocityX < -500){
+        } else if (velocityX < -500) {
             close();
         }
 
@@ -264,79 +263,84 @@ public class TabDrawer extends ViewGroup implements GestureDetector.OnGestureLis
 
     /**********************************Setters**************************************************************/
 
-    /**********************************AddView and RemoveView overrides**************************************************/
+    /**
+     * *******************************AddView and RemoveView overrides*************************************************
+     */
     private OnTouchListener childListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if(childTouchListener != null)
+            if (childTouchListener != null)
                 childTouchListener.onTouch(v, event);
             return false;
         }
     };
 
     @Override
-    public void addView(View view){
+    public void addView(View view) {
         super.addView(view);
         view.setOnTouchListener(childListener);
     }
 
     @Override
-    public void addView(View view, int index){
+    public void addView(View view, int index) {
         super.addView(view, index);
         view.setOnTouchListener(childListener);
     }
 
     @Override
-    public void addView(View view, int index, LayoutParams layoutParams){
+    public void addView(View view, int index, LayoutParams layoutParams) {
         super.addView(view, index, layoutParams);
         view.setOnTouchListener(childListener);
     }
 
     @Override
-    public void addView(View view, LayoutParams layoutParams){
+    public void addView(View view, LayoutParams layoutParams) {
         super.addView(view, layoutParams);
         view.setOnTouchListener(childListener);
     }
 
     @Override
-    public void addView(View view, int width, int height){
+    public void addView(View view, int width, int height) {
         super.addView(view, width, height);
         view.setOnTouchListener(childListener);
     }
 
     @Override
-    public void removeView(View view){
+    public void removeView(View view) {
         super.removeView(view);
         view.setOnTouchListener(null);
     }
 
-    /*********************************Listeners and Listener handlers************************************************************/
+    /**
+     * ******************************Listeners and Listener handlers***********************************************************
+     */
     private OnChildTouchListener childTouchListener;
     private ExpansionListener expansionListener;
 
-    public void setOnChildTouchListener(OnChildTouchListener ls){
+    public void setOnChildTouchListener(OnChildTouchListener ls) {
         childTouchListener = ls;
     }
 
-    public void setExpansionListener(ExpansionListener ls){
+    public void setExpansionListener(ExpansionListener ls) {
         expansionListener = ls;
     }
 
-    public OnChildTouchListener getChildTouchListener(){
+    public OnChildTouchListener getChildTouchListener() {
         return childTouchListener;
     }
 
-    public ExpansionListener getExpansionListener(){
+    public ExpansionListener getExpansionListener() {
         return expansionListener;
     }
 
 
-    public interface OnChildTouchListener{
+    public interface OnChildTouchListener {
         public void onTouch(View child, MotionEvent evt);
     }
 
-    public interface ExpansionListener{
+    public interface ExpansionListener {
         public void opened();
+
         public void closed();
     }
 

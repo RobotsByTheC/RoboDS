@@ -6,5 +6,13 @@
     <string name="action_switch_layout">Switch Layout</string>
     <string name="title_activity_layout_editor">Layout Editor</string>
     <string name="title_activity_layout_switcher">Change Layouts</string>
+    <string name="x_joy_number_text">X Joy Number:</string>
+    <string name="layout_delete">Delete</string>
+    <string name="layout_edit">Edit</string>
+    <string name="layout_settings">Layout Settings</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
+    <string name="basic_joystick">Basic Joystick</string>
+    <string name="clear">Clear</string>
 
 </resources>

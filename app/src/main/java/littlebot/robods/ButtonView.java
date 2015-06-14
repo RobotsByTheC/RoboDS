@@ -2,17 +2,22 @@ package littlebot.robods;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
+
+import java.util.HashMap;
 
 /**
- * Created by raystubbs on 23/03/15.
+ *
+ * @author raystubbs
+ * @author Ben Wolsieffer
  */
 public abstract class ButtonView extends ControlView {
 
-    private int joystickNumber = -1;
-    private int buttonNumber = -1;
-    private String text = "default";
-    private boolean pressed;
+    private static final String JOYSTICK_NUMBER_PROPERTY = "joy";
+    private static final String BUTTON_NUMBER_PROPERTY = "button";
+
+    private int joystickNumber = 1;
+    private int buttonNumber = 1;
+    private boolean buttonPressed;
 
     private ButtonListener listener;
 
@@ -31,7 +36,7 @@ public abstract class ButtonView extends ControlView {
         init();
     }
 
-    private void init(){
+    private void init() {
         //Nothing here yet
     }
 
@@ -52,63 +57,42 @@ public abstract class ButtonView extends ControlView {
     }
 
 
-    public void setText(String text){
-        this.text = text;
-    }
+    public void setButtonPressed(boolean pressed) {
+        this.buttonPressed = pressed;
 
-    public String getText(){
-        return text;
-    }
-
-    public void setPressed(boolean pressed){
-        this.pressed = pressed;
-
-        if(listener != null){
-            if(pressed)
+        if (listener != null) {
+            if (pressed)
                 listener.buttonPressed();
             else
                 listener.buttonReleased();
         }
     }
 
-    public boolean isPressed() {
-        return pressed;
+    public boolean isButtonPressed() {
+        return buttonPressed;
     }
 
     @Override
-    public DSLayoutNode toLayoutNode() {
-        return new DSLayoutNode(this.getClass(), getProperties());
+    public void readProperties(HashMap<String, Object> properties) {
+        super.readProperties(properties);
+        setJoystickNumber((Integer) properties.get(JOYSTICK_NUMBER_PROPERTY));
+        setButtonNumber((Integer) properties.get(BUTTON_NUMBER_PROPERTY));
     }
 
     @Override
-    public Object[] getProperties() {
-        return new Object[]{
-            joystickNumber,
-            buttonNumber,
-            this.getText(),
-            this.getX(),
-            this.getY(),
-            this.getWidth(),
-            this.getHeight()
-        };
+    public void writeProperties(HashMap<String, Object> properties) {
+        super.writeProperties(properties);
+        properties.put(JOYSTICK_NUMBER_PROPERTY, getJoystickNumber());
+        properties.put(BUTTON_NUMBER_PROPERTY, getButtonNumber());
     }
 
-    @Override
-    public void setProperties(Object[] properties) {
-        setJoystickNumber((Integer)properties[0]);
-        setButtonNumber((Integer)properties[1]);
-        setText((String)properties[2]);
-        setX((Float)properties[3]);
-        setY((Float)properties[4]);
-        setLayoutParams(new ViewGroup.LayoutParams((Integer)properties[5], (Integer)properties[6]));
-    }
-
-    public void setButtonListener(ButtonListener l){
+    public void setButtonListener(ButtonListener l) {
         listener = l;
     }
 
-    public interface ButtonListener{
+    public interface ButtonListener {
         void buttonPressed();
+
         void buttonReleased();
     }
 }

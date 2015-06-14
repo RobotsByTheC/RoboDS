@@ -1,31 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:stretchColumns="1"
+    android:padding="24dp">
 
     <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <TableRow
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_column="0">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="RoboRio IP"
-                android:id="@+id/textView" />
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/layout_settings_name" />
+    </TableRow>
 
-            <EditText
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/rio_ip" />
-        </TableRow>
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="roboRIO IP"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/layout_settings_roborio_ip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </TableRow>
 
@@ -33,36 +44,27 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-        <TableRow
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_column="0">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Orientation"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-            <TextView
+        <RadioGroup android:layout_width="fill_parent">
+
+            <RadioButton
+                android:id="@+id/layout_settings_orientation_landscape"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="Orientation"
-                android:id="@+id/textView2" />
+                android:checked="true"
+                android:text="Landscape" />
 
-            <RadioGroup
-                android:layout_width="fill_parent"
-                android:layout_height="77dp">
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Landscape"
-                    android:id="@+id/orientation_landscape"
-                    android:checked="true" />
-
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Partrait"
-                    android:id="@+id/orientation_portrait"
-                    android:checked="false" />
-            </RadioGroup>
-        </TableRow>
+            <RadioButton
+                android:id="@+id/layout_settings_orientation_portrait"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false"
+                android:text="Portrait" />
+        </RadioGroup>
     </TableRow>
 </TableLayout>

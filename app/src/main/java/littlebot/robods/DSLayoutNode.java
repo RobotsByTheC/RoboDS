@@ -4,24 +4,29 @@ import android.content.Context;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 
 /**
- * Created by raystubbs on 22/03/15.
+ * Represents a node in the layout of the driver station. This is used to save the layout to a
+ * file.
+ *
+ * @author raystubbs
+ * @author Ben Wolsieffer
  */
-public class DSLayoutNode implements Serializable{
+public class DSLayoutNode implements Serializable {
 
     private Class objectClass;
-    private Object[] properties;
+    private HashMap<String, Object> properties;
 
-    public DSLayoutNode(Class objectClass, Object[] properties){
+    public DSLayoutNode(Class objectClass, HashMap<String, Object> properties) {
         this.objectClass = objectClass;
         this.properties = properties;
     }
 
-    public ControlView inflate(Context context){
+    public ControlView inflate(Context context) {
         try {
-            ControlView controlView = (ControlView)objectClass.getConstructor(Context.class).newInstance(context);
-            controlView.setProperties(properties);
+            ControlView controlView = (ControlView) objectClass.getConstructor(Context.class).newInstance(context);
+            controlView.readProperties(properties);
             return controlView;
         } catch (InstantiationException e) {
             e.printStackTrace();

@@ -31,20 +31,20 @@ public class ConnectionIndicator extends View {
         init(context);
     }
 
-    public void init(Context context){
+    public void init(Context context) {
         this.setLayoutParams(new ViewGroup.LayoutParams(48, 48));
 
         connectedDrawable = context.getResources().getDrawable(R.drawable.connection_indicator_connected);
         disconnectedDrawable = context.getResources().getDrawable(R.drawable.connection_indicator_disconnected);
 
-        int iconSize = (int)context.getResources().getDimension(R.dimen.action_icon_size);
+        int iconSize = (int) context.getResources().getDimension(R.dimen.action_icon_size);
         connectedDrawable.setBounds(new Rect(0, 0, iconSize, iconSize));
         disconnectedDrawable.setBounds(new Rect(0, 0, iconSize, iconSize));
     }
 
     @Override
-    public void onDraw(Canvas canvas){
-        if(connected)
+    public void onDraw(Canvas canvas) {
+        if (connected)
             connectedDrawable.draw(canvas);
         else
             disconnectedDrawable.draw(canvas);

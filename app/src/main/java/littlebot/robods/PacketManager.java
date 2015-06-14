@@ -1,7 +1,6 @@
 package littlebot.robods;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -34,12 +33,12 @@ public class PacketManager {
     private ConnectionListener connectionListener;
     private PacketListener packetListener;
 
-    public PacketManager(DSPacketFactory dsFact, RIOPacketParser rioParc){
+    public PacketManager(DSPacketFactory dsFact, RIOPacketParser rioParc) {
         packetFactory = dsFact;
         packetParser = rioParc;
     }
 
-    private boolean connect(InetAddress rio) throws SocketException, IOException{
+    private boolean connect(InetAddress rio) throws SocketException, IOException {
         rioAddr = rio;
         rioSocket = new DatagramSocket();
         dsSocket = new DatagramSocket(DS_PORT);
@@ -47,13 +46,13 @@ public class PacketManager {
         DatagramPacket dsPacket = new DatagramPacket(new byte[MAX_DS_PACKET_SIZE], MAX_DS_PACKET_SIZE);
 
         int connectionAttempts = 0;
-        while(connectionAttempts < 5){
+        while (connectionAttempts < 5) {
             byte[] rioData = packetFactory.getConnectionPacket();
             DatagramPacket rioPacket = new DatagramPacket(rioData, rioData.length, rioAddr, RIO_PORT);
             rioSocket.send(rioPacket);
-            try{
+            try {
                 dsSocket.receive(dsPacket);
-            }catch(InterruptedIOException e){
+            } catch (InterruptedIOException e) {
                 connectionAttempts++;
                 continue;
             }
@@ -63,10 +62,10 @@ public class PacketManager {
         return false;
     }
 
-    public void startSending(final String sRioAddr){
+    public void startSending(final String sRioAddr) {
         running = true;
-        new Thread(){
-            public void run(){
+        new Thread() {
+            public void run() {
                 try {
                     rioAddr = InetAddress.getByName(sRioAddr);
                 } catch (UnknownHostException e) {
@@ -84,16 +83,16 @@ public class PacketManager {
                     return;
                 }
 
-                if(!connected){
+                if (!connected) {
                     onConnectionFailed();
                     running = false;
                     return;
-                }else{
+                } else {
                     onConnect();
                 }
 
-                while(connected && running){
-                     byte[] rioData = packetFactory.getPacket();
+                while (connected && running) {
+                    byte[] rioData = packetFactory.getPacket();
                     DatagramPacket rioPacket = new DatagramPacket(rioData, rioData.length, rioAddr, RIO_PORT);
                     try {
                         rioSocket.send(rioPacket);
@@ -103,15 +102,15 @@ public class PacketManager {
                         stopSending();
                     }
 
-                    try{
+                    try {
                         DatagramPacket dsPacket = new DatagramPacket(new byte[MAX_DS_PACKET_SIZE], MAX_DS_PACKET_SIZE);
                         dsSocket.receive(dsPacket);
                         onPacketReceived(dsPacket);
-                    }catch(InterruptedIOException e){
+                    } catch (InterruptedIOException e) {
                         //If the rio takes too long to respond
                         onConnectionLost();
                         stopSending();
-                    }catch(IOException e){
+                    } catch (IOException e) {
                         onConnectionLost();
                         stopSending();
                     }
@@ -120,14 +119,14 @@ public class PacketManager {
         }.start();
     }
 
-    public void recoverConnection(){
+    public void recoverConnection() {
 
         //Remove preceding '/' from string address
         String addr = rioAddr.toString().substring(1);
         startSending(addr);
     }
 
-    protected void stopSending(){
+    protected void stopSending() {
         running = false;
         connected = false;
         onDisconnect();
@@ -135,66 +134,72 @@ public class PacketManager {
         dsSocket.close();
     }
 
-    protected void onConnect(){
-        if(connectionListener != null)
-             connectionListener.onConnect();
+    protected void onConnect() {
+        if (connectionListener != null)
+            connectionListener.onConnect();
     }
-    protected void onDisconnect(){
-        if(connectionListener != null)
+
+    protected void onDisconnect() {
+        if (connectionListener != null)
             connectionListener.onDisconnect();
     }
 
-    protected void onConnectionFailed(){
-        if(connectionListener != null)
+    protected void onConnectionFailed() {
+        if (connectionListener != null)
             connectionListener.onConnectionFailed();
     }
 
-    protected void onConnectionLost(){
-        if(connectionListener != null)
+    protected void onConnectionLost() {
+        if (connectionListener != null)
             connectionListener.onConnectionLost();
     }
 
-    protected void onPacketReceived(DatagramPacket packet){
-        if(packetListener != null)
+    protected void onPacketReceived(DatagramPacket packet) {
+        if (packetListener != null)
             packetListener.onPacketReceived(packet);
     }
 
-    protected void onPacketSent(DatagramPacket packet){
-        if(packetListener != null)
+    protected void onPacketSent(DatagramPacket packet) {
+        if (packetListener != null)
             packetListener.onPacketSent(packet);
     }
 
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         return connected;
     }
 
-    public boolean isRunning(){
+    public boolean isRunning() {
         return running;
     }
 
-    public void setConnectionListener(ConnectionListener l){
+    public void setConnectionListener(ConnectionListener l) {
         connectionListener = l;
     }
 
-    public void setPacketListener(PacketListener l){
+    public void setPacketListener(PacketListener l) {
         packetListener = l;
     }
 
 
-    /***************************Listener definitions**********************************/
-    public interface ConnectionListener{
+    /**
+     * ************************Listener definitions*********************************
+     */
+    public interface ConnectionListener {
         void onConnect();
+
         void onDisconnect();
+
         void onConnectionLost();
+
         void onConnectionFailed();
     }
 
-    public interface PacketListener{
+    public interface PacketListener {
         void onPacketReceived(DatagramPacket packet);
+
         void onPacketSent(DatagramPacket packet);
     }
-
 
 
 }
