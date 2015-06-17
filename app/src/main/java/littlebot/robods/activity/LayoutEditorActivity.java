@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -43,6 +45,8 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
     private ControlView selectedView;
 
+    private Animation controlCreateAnimation;
+    private Animation controlDeleteAnimation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,9 @@ public class LayoutEditorActivity extends AppCompatActivity {
         LayoutManager.initialize(this);
 
         setContentView(R.layout.activity_editor);
+
+        controlCreateAnimation = AnimationUtils.loadAnimation(this, R.anim.fab_scale_up);
+        controlDeleteAnimation = AnimationUtils.loadAnimation(this, R.anim.fab_scale_down);
 
         footerLayout = (CoordinatorLayout) findViewById(R.id.editor_layout_footer);
         controlLayout = new ControlLayout(this);
@@ -87,13 +94,19 @@ public class LayoutEditorActivity extends AppCompatActivity {
         footerLayout.bringToFront();
     }
 
+    private void addControl(ControlView control) {
+        controlLayout.addControl(control);
+        setSelectedControl(control);
+        control.startAnimation(controlCreateAnimation);
+    }
+
     private void setupControl(final ControlView control) {
         addButtonMenu.close(true);
         final Dialog dialog = control.getEditDialog();
         control.setEditListener(new ControlView.EditListener() {
             @Override
             public void onEdit(ViewGroup editDialogLayout) {
-                controlLayout.addControl(control);
+                addControl(control);
                 control.setEditListener(null);
             }
         });
@@ -119,13 +132,15 @@ public class LayoutEditorActivity extends AppCompatActivity {
     public void deleteControl(MenuItem item) {
         if (selectedView != null) {
             final ControlView deletedControl = selectedView;
-            controlLayout.removeControl(selectedView);
+            Animation deleteAnimation = AnimationUtils.loadAnimation(LayoutEditorActivity.this, R.anim.fab_scale_down);
+            deletedControl.startAnimation(controlDeleteAnimation);
+            controlLayout.removeControl(deletedControl);
             setSelectedControl(null);
             Snackbar.make(footerLayout, R.string.control_delete_snackbar, Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            controlLayout.addControl(deletedControl);
+                            addControl(deletedControl);
                         }
                     }).show();
         }
@@ -159,7 +174,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
     public void clearLayout(MenuItem item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to clear the layout?")
+        builder.setMessage(getString(R.string.editor_clear_confirmation))
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

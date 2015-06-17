@@ -16,4 +16,5 @@
     <string name="control_delete_snackbar">Control deleted</string>
     <string name="dialog_layout_settings_title">Layout Settings</string>
     <string name="dialog_layout_settings_name_error">Layout already exists</string>
+    <string name="editor_clear_confirmation">Are you sure you want to clear the layout?</string>
 </resources>

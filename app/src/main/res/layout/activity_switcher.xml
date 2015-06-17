@@ -1,6 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context="littlebot.robods.activity.LayoutSwitcherActivity">
@@ -20,9 +20,9 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/fab_margin"
         android:onClick="createLayout"
-        android:src= "@drawable/fab_add"
+        android:src="@drawable/fab_add"
         app:fab_colorRipple="@android:color/transparent"
-        app:fab_showAnimation="@anim/show_from_bottom"
-        app:fab_hideAnimation="@anim/hide_to_bottom"/>
+        app:fab_hideAnimation="@anim/hide_to_bottom"
+        app:fab_showAnimation="@anim/show_from_bottom"/>
 
 </RelativeLayout>
