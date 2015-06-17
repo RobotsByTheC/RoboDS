@@ -1,0 +1,119 @@
+<RelativeLayout
+    android:id="@+id/editor_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:screenOrientation="behind"
+    tools:context=".LayoutEditorActivity">
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/editor_add_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
+        fab:menu_colorRipple="@android:color/transparent"
+        fab:menu_labels_colorRipple="@android:color/transparent">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/editor_joystick_add_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createJoystick"
+            fab:fab_colorRipple="@android:color/transparent"
+            fab:fab_label="Joystick"
+            fab:fab_size="mini"/>
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/editor_button_add_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createButton"
+            fab:fab_colorRipple="@android:color/transparent"
+            fab:fab_label="Button"
+            fab:fab_size="mini"/>
+
+    </com.github.clans.fab.FloatingActionMenu>
+
+    <!--<view-->
+    <!--android:id="@+id/drawer_buttons"-->
+    <!--android:layout_width="460dp"-->
+    <!--android:layout_height="200dp"-->
+    <!--class="littlebot.views.TabDrawer"-->
+    <!--myviews:tabIcon="@drawable/button_tab_icon"-->
+    <!--myviews:tabTop="0dp"-->
+    <!--myviews:tabBottom="60dp"-->
+    <!--myviews:tabWidth="60dp"-->
+    <!--myviews:tabPadding="5dp"-->
+    <!--android:layout_below="@id/drawer_joysticks">-->
+
+    <!--<littlebot.robods.BasicButton-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"/>-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:textColor="#FFF"-->
+    <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--android:text="Other Button"/>-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:textColor="#FFF"-->
+    <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--android:text="Other Button"/>-->
+
+    <!--</view>-->
+    <!--<view-->
+    <!--android:id="@+id/drawer_display_digital"-->
+    <!--android:layout_width="460dp"-->
+    <!--android:layout_height="200dp"-->
+    <!--class="littlebot.views.TabDrawer"-->
+    <!--myviews:tabIcon="@drawable/digital_display_tab_icon"-->
+    <!--myviews:tabTop="0dp"-->
+    <!--myviews:tabBottom="60dp"-->
+    <!--myviews:tabWidth="60dp"-->
+    <!--myviews:tabPadding="5dp"-->
+    <!--android:layout_x="-400dp"-->
+    <!--android:layout_y="120dp">-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:textColor="#FFF"-->
+    <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--android:text="Coming Soon"/>-->
+
+    <!--</view>-->
+
+
+    <!--<view-->
+    <!--android:id="@+id/drawer_display_analog"-->
+    <!--android:layout_width="460dp"-->
+    <!--android:layout_height="200dp"-->
+    <!--class="littlebot.views.TabDrawer"-->
+    <!--myviews:tabIcon="@drawable/analog_display_tab_icon"-->
+    <!--myviews:tabTop="0dp"-->
+    <!--myviews:tabBottom="60dp"-->
+    <!--myviews:tabWidth="60dp"-->
+    <!--myviews:tabPadding="5dp"-->
+    <!--android:layout_x="-400dp"-->
+    <!--android:layout_y="180dp" >-->
+
+    <!--<TextView-->
+    <!--android:layout_width="100dp"-->
+    <!--android:layout_height="100dp"-->
+    <!--android:textColor="#FFF"-->
+    <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--android:text="Coming Soon"/>-->
+
+    <!--</view>-->
+
+
+</RelativeLayout>

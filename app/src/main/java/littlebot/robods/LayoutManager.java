@@ -15,6 +15,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class used to manage {@link DSLayout}s and their saved states.
@@ -34,6 +39,8 @@ public class LayoutManager {
     private final File layoutDirectory;
     private final Thread operationThread;
     private Handler operationHandler;
+    private final ArrayList<String> layouts = new ArrayList<>(2);
+    private final List<String> readOnlyLayouts = Collections.unmodifiableList(layouts);
 
     private static abstract class Operation<Parameter, Result> {
         private static int maxId = 0;
@@ -80,7 +87,7 @@ public class LayoutManager {
         startOperation(initOperation, null, null);
     }
 
-    private <Parameter, Result> void startOperation(Operation<Parameter, Result> operation, Parameter param, OperationCallback<Result> callback) {
+    private void waitUntilReady() {
         synchronized (operationThread) {
             while (operationHandler == null) {
                 try {
@@ -89,6 +96,10 @@ public class LayoutManager {
                 }
             }
         }
+    }
+
+    private <Parameter, Result> void startOperation(Operation<Parameter, Result> operation, Parameter param, OperationCallback<Result> callback) {
+        waitUntilReady();
         operationHandler.sendMessage(operationHandler.obtainMessage(operation.id, 0, 0, new Object[]{operation, param, callback}));
     }
 
@@ -102,18 +113,21 @@ public class LayoutManager {
             if (prefsCurrentLayout != null) {
                 setCurrentLayoutImpl(prefsCurrentLayout);
             }
+            String[] layoutArr = layoutDirectory.list();
+            layouts.addAll(Arrays.asList(layoutArr));
+            Collections.sort(layouts, Collator.getInstance());
             return null;
         }
     };
 
-    private final Operation<Void, String[]> getLayoutNamesOperation = new Operation<Void, String[]>() {
+    private final Operation<Void, List<String>> getLayoutNamesOperation = new Operation<Void, List<String>>() {
         @Override
-        public String[] run(Void param) {
-            return layoutDirectory.list();
+        public List<String> run(Void param) {
+            return Collections.unmodifiableList(layouts);
         }
     };
 
-    public void getLayoutNames(OperationCallback<String[]> callback) {
+    public void getLayoutNames(OperationCallback<List<String>> callback) {
         startOperation(getLayoutNamesOperation, null, callback);
     }
 
@@ -202,7 +216,7 @@ public class LayoutManager {
         return layout;
     }
 
-    public void getLayoutImpl(@NonNull String name, @Nullable OperationCallback<DSLayout> callback) throws IOException {
+    public void getLayout(@NonNull String name, @Nullable OperationCallback<DSLayout> callback) {
         startOperation(getLayoutOperation, name, callback);
     }
 
@@ -213,6 +227,11 @@ public class LayoutManager {
             try {
                 output = new ObjectOutputStream(new FileOutputStream(getLayoutFile(layout.getName())));
                 output.writeObject(layout);
+                String name = layout.getName();
+                int i = Collections.binarySearch(layouts, name, Collator.getInstance());
+                if (i < 0) {
+                    layouts.add(-i - 1, name);
+                }
             } catch (IOException e) {
                 Log.w(TAG, "Unable to save layout file: " + e);
             } finally {
@@ -239,6 +258,14 @@ public class LayoutManager {
         @Override
         public Void run(String name) {
             getLayoutFile(name).delete();
+            layouts.remove(name);
+            if (currentLayout != null && currentLayout.getName().equals(name)) {
+                if (layouts.isEmpty()) {
+                    setCurrentLayoutImpl(null);
+                } else {
+                    setCurrentLayoutImpl(getLayoutImpl(layouts.get(0)));
+                }
+            }
             return null;
         }
     };
@@ -251,7 +278,9 @@ public class LayoutManager {
         startOperation(removeLayoutOperation, name, callback);
     }
 
-    private @NonNull File getLayoutFile(@NonNull String name) {
+    private
+    @NonNull
+    File getLayoutFile(@NonNull String name) {
         return new File(layoutDirectory.getAbsolutePath() + "/" + name);
     }
 

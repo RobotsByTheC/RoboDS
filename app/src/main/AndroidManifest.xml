@@ -8,34 +8,32 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".DriverStationActivity"
+            android:name=".activity.DriverStationActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".LayoutEditorActivity"
+            android:name=".activity.LayoutEditorActivity"
             android:label="@string/title_activity_layout_editor"
-            android:parentActivityName=".DriverStationActivity" >
+            android:parentActivityName=".activity.DriverStationActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".DriverStationActivity" />
+                android:value=".activity.DriverStationActivity" />
         </activity>
         <activity
-            android:name=".LayoutSwitcherActivity"
+            android:name=".activity.LayoutSwitcherActivity"
             android:label="@string/title_activity_layout_switcher"
-            android:parentActivityName=".DriverStationActivity" >
+            android:parentActivityName=".activity.DriverStationActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".DriverStationActivity" />
+                android:value=".activity.DriverStationActivity" />
         </activity>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

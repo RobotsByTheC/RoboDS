@@ -66,7 +66,7 @@ public class BasicButton extends ButtonView {
         paint.setFakeBoldText(true);
         paint.setTextAlign(Paint.Align.CENTER);
 
-        ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.basic_button_dialog, null));
+        ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.dialog_basic_button, null));
         joyNumTV = (TextView) editDialogLayout.findViewById(R.id.joy_num_text);
         buttonNumTV = (TextView) editDialogLayout.findViewById(R.id.button_num_text);
         textTV = (TextView) editDialogLayout.findViewById(R.id.button_text);

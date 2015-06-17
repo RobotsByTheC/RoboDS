@@ -1,4 +1,4 @@
-package littlebot.robods;
+package littlebot.robods.activity;
 
 /**
  * Author:          Ray Stubbs
@@ -20,6 +20,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.net.DatagramPacket;
+
+import littlebot.robods.ButtonView;
+import littlebot.robods.ConnectionIndicator;
+import littlebot.robods.ControlLayout;
+import littlebot.robods.ControlView;
+import littlebot.robods.DSLayout;
+import littlebot.robods.DSPacketFactory;
+import littlebot.robods.EnableButton;
+import littlebot.robods.JoystickView;
+import littlebot.robods.LayoutManager;
+import littlebot.robods.ModeSwitch;
+import littlebot.robods.PacketManager;
+import littlebot.robods.R;
+import littlebot.robods.RIOPacketParser;
 
 
 public class DriverStationActivity extends AppCompatActivity {
@@ -93,10 +107,10 @@ public class DriverStationActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         /*********Inflate the menu*********************************/
-        getMenuInflater().inflate(R.menu.layout_controller, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_controller, menu);
 
-        menu.getItem(ITEM_INDEX_SWITCH_LAYOUT).setIntent(new Intent(this, LayoutSwitcherActivity.class));
-        menu.getItem(ITEM_INDEX_EDIT_LAYOUT).setIntent(new Intent(this, LayoutEditorActivity.class));
+        menu.findItem(R.id.action_switch_layout).setIntent(new Intent(this, LayoutSwitcherActivity.class));
+        menu.findItem(R.id.action_edit_layout).setIntent(new Intent(this, LayoutEditorActivity.class));
 
         if (layout == null)
             return true;

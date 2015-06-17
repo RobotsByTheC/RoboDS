@@ -1,8 +1,6 @@
-package littlebot.robods;
+package littlebot.robods.activity;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,11 +10,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
+
+import littlebot.robods.BasicButton;
+import littlebot.robods.BasicJoystick;
+import littlebot.robods.ControlLayout;
+import littlebot.robods.ControlView;
+import littlebot.robods.DSLayout;
+import littlebot.robods.LayoutManager;
+import littlebot.robods.LayoutSettingsDialog;
+import littlebot.robods.R;
 
 
 public class LayoutEditorActivity extends AppCompatActivity {
@@ -24,7 +29,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
     private static final String TAG = LayoutEditorActivity.class.getName();
 
     private ControlLayout controlLayout;
-    private FloatingActionsMenu addButtonMenu;
+    private FloatingActionMenu addButtonMenu;
     private FloatingActionButton joystickAddButton,
             buttonAddButton;
     private MenuItem menuEditItem;
@@ -39,7 +44,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         LayoutManager.initialize(this);
 
-        setContentView(R.layout.activity_layout_editor);
+        setContentView(R.layout.activity_editor);
 
         controlLayout = new ControlLayout(this);
         controlLayout.setControlListener(new ControlLayout.ControlListener() {
@@ -49,7 +54,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
                 control.setEditing(true);
             }
         });
-        addButtonMenu = (FloatingActionsMenu) findViewById(R.id.editor_add_menu);
+        addButtonMenu = (FloatingActionMenu) findViewById(R.id.editor_add_menu);
         joystickAddButton = (FloatingActionButton) findViewById(R.id.editor_joystick_add_button);
         buttonAddButton = (FloatingActionButton) findViewById(R.id.editor_button_add_button);
 
@@ -77,7 +82,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
     }
 
     private void setupControl(final ControlView control) {
-        addButtonMenu.collapse();
+        addButtonMenu.close(true);
         final Dialog dialog = control.getEditDialog();
         control.setEditListener(new ControlView.EditListener() {
             @Override
@@ -113,42 +118,16 @@ public class LayoutEditorActivity extends AppCompatActivity {
     }
 
     public void showLayoutSettings(MenuItem item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(LayoutEditorActivity.this);
-        builder.setTitle("Layout Settings");
+        final LayoutSettingsDialog lsd = new LayoutSettingsDialog(this, false);
+        lsd.setOkListener(new View.OnClickListener() {
 
-        final View dialogView = getLayoutInflater().inflate(R.layout.layout_settings_dialog, null);
-        final TextView name = (TextView) dialogView.findViewById(R.id.layout_settings_name);
-        final TextView roboRIOIP = (TextView) dialogView.findViewById(R.id.layout_settings_roborio_ip);
-        final RadioButton orientLandRB = (RadioButton) dialogView.findViewById(R.id.layout_settings_orientation_landscape);
-        final RadioButton orientPortRB = (RadioButton) dialogView.findViewById(R.id.layout_settings_orientation_portrait);
-
-        if (loadedLayout.getOrientation() == DSLayout.Orientation.LANDSCAPE) {
-            orientLandRB.setChecked(true);
-        } else {
-            orientPortRB.setChecked(true);
-        }
-
-        name.setText(loadedLayout.getName());
-        roboRIOIP.setText(loadedLayout.getRioIP());
-
-        builder.setView(dialogView);
-
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(View view) {
                 final String oldName = loadedLayout.getName();
-                String newName = name.getText().toString();
-                loadedLayout.setRioIP(roboRIOIP.getText().toString());
-
-                if (orientLandRB.isChecked()) {
-                    loadedLayout.setOrientation(DSLayout.Orientation.LANDSCAPE);
-                } else {
-                    loadedLayout.setOrientation(DSLayout.Orientation.PORTRAIT);
-                }
+                lsd.toLayout(loadedLayout);
                 updateOrientation();
 
-                if (!oldName.equals(newName)) {
-                    loadedLayout.setName(newName);
+                if (!oldName.equals(loadedLayout.getName())) {
                     final LayoutManager lm = LayoutManager.getInstance();
                     lm.saveLayout(loadedLayout, new LayoutManager.OperationCallback<Void>() {
                         @Override
@@ -158,18 +137,10 @@ public class LayoutEditorActivity extends AppCompatActivity {
                         }
                     });
                 }
-                dialog.dismiss();
             }
         });
-
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-
-        builder.show();
+        lsd.show();
+        lsd.fromLayout(loadedLayout);
     }
 
     public void clearLayout(MenuItem item) {
@@ -180,7 +151,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.layout_editor, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_editor, menu);
         menuEditItem = menu.findItem(R.id.layout_editor_menu_edit);
         menuDeleteItem = menu.findItem(R.id.layout_editor_menu_delete);
 
@@ -292,7 +263,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
         @Override
         public void deselected(ControlView v) {
-            if(selectedView == v) {
+            if (selectedView == v) {
                 selectedView = null;
                 updateOptionsMenu();
             }

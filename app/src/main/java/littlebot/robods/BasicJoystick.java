@@ -63,7 +63,7 @@ public class BasicJoystick extends JoystickView {
         paint = new Paint();
         setRadius(centerRadius);
 
-        ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.basic_joystick_dialog, null));
+        ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.dialog_basic_joystick, null));
         xJoyNumTV = (TextView) editDialogLayout.findViewById(R.id.x_joy_num_text);
         yJoyNumTV = (TextView) editDialogLayout.findViewById(R.id.y_joy_num_text);
         xAxisNumTV = (TextView) editDialogLayout.findViewById(R.id.x_axis_text);

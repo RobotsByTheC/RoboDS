@@ -126,7 +126,7 @@ public class PacketManager {
         startSending(addr);
     }
 
-    protected void stopSending() {
+    public void stopSending() {
         running = false;
         connected = false;
         onDisconnect();
