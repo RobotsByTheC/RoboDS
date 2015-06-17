@@ -4,14 +4,14 @@
     tools:context=".LayoutEditorActivity">
 
     <item
-        android:title="@string/layout_edit"
+        android:title="@string/edit"
         app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_edit"
         android:id="@+id/layout_editor_menu_edit"
         android:onClick="editControl"/>
 
     <item
-        android:title="@string/layout_delete"
+        android:title="@string/delete"
         app:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_delete"
         android:id="@+id/layout_editor_menu_delete"

@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.DragEvent;
 import android.view.Menu;
@@ -29,6 +31,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
     private static final String TAG = LayoutEditorActivity.class.getName();
 
     private ControlLayout controlLayout;
+    private CoordinatorLayout footerLayout;
     private FloatingActionMenu addButtonMenu;
     private FloatingActionButton joystickAddButton,
             buttonAddButton;
@@ -46,6 +49,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_editor);
 
+        footerLayout = (CoordinatorLayout) findViewById(R.id.editor_layout_footer);
         controlLayout = new ControlLayout(this);
         controlLayout.setControlListener(new ControlLayout.ControlListener() {
             @Override
@@ -78,7 +82,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
         loadLayout();
         ((ViewGroup) findViewById(R.id.editor_layout)).addView(controlLayout);
-        addButtonMenu.bringToFront();
+        footerLayout.bringToFront();
     }
 
     private void setupControl(final ControlView control) {
@@ -112,8 +116,16 @@ public class LayoutEditorActivity extends AppCompatActivity {
 
     public void deleteControl(MenuItem item) {
         if (selectedView != null) {
+            final ControlView deletedControl = selectedView;
             controlLayout.removeControl(selectedView);
             setSelectedControl(null);
+            Snackbar.make(footerLayout, R.string.control_delete_snackbar, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.undo, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            controlLayout.addControl(deletedControl);
+                        }
+                    }).show();
         }
     }
 

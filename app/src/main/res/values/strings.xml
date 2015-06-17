@@ -3,15 +3,17 @@
     <string name="app_name">RoboDS</string>
     <string name="action_edit_layout">Edit Layout</string>
     <string name="action_switch_layout">Switch Layout</string>
-    <string name="title_activity_layout_editor">Layout Editor</string>
-    <string name="title_activity_layout_switcher">Switch Layout</string>
+    <string name="activity_editor_title">Layout Editor</string>
+    <string name="activity_switcher_title">Switch Layout</string>
     <string name="x_joy_number_text">X Joy Number:</string>
-    <string name="layout_delete">Delete</string>
-    <string name="layout_edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
     <string name="layout_settings">Layout Settings</string>
     <string name="create">Create</string>
     <string name="basic_joystick">Basic Joystick</string>
     <string name="clear">Clear</string>
+    <string name="undo">Undo</string>
+    <string name="control_delete_snackbar">Control deleted</string>
     <string name="dialog_layout_settings_title">Layout Settings</string>
     <string name="dialog_layout_settings_name_error">Layout already exists</string>
 </resources>

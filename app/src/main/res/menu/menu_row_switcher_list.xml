@@ -4,6 +4,6 @@
     <item
         android:id="@+id/switcher_list_menu_delete"
         android:icon="@android:drawable/ic_menu_delete"
-        android:title="@string/layout_delete"
+        android:title="@string/delete"
         app:showAsAction="ifRoom"/>
 </menu>
