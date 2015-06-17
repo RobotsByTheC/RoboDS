@@ -1,6 +1,8 @@
 package littlebot.robods.activity;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -156,8 +158,21 @@ public class LayoutEditorActivity extends AppCompatActivity {
     }
 
     public void clearLayout(MenuItem item) {
-        controlLayout.removeAllViews();
-        setSelectedControl(null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to clear the layout?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        controlLayout.removeAllViews();
+                        setSelectedControl(null);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
     }
 
     @Override
