@@ -1,12 +1,17 @@
 frc_ds_2015 = Proto ("frc_ds_2015","FRC 2015 Driver Station Protocol")
 
-local MODE_VALS = {[0x0] = "Disabled", [0x4] = "Enabled (Teleoperated)", [0x6] = "Enabled (Autonomous)", [0x5] = "Enabled (Test)", [0x80] = "Emergency Stopped"}
+local MODE_VALS = {[0x0] = "Teleoperated", [0x2] = "Autonomous", [0x1] = "Test"}
 local SECTION_TYPE_VALS = {[0x0c] = "Joystick", [0x0f] = "Time", [0x10] = "Timezone"}
-local ALLIANCE_COLOR_VALS = {[66] = "Blue", [82] = "Red"}
-local ALLIANCE_POS_VALS = {[49] = "1", [50] = "2", [51] = "3"}
+local POSITION_VALS = {[0x0] = "Red 1", [0x01] = "Red 2", [0x02] = "Red 3", [0x03] = "Blue 1", [0x04] = "Blue 2", [0x05] = "Blue 3"}
 local fields = {
 	pkt_num = ProtoField.uint16("frc_ds_2015.pkt_num", "Packet Number", base.DEC),
-	mode = ProtoField.uint8("frc_ds_2015.mode", "Mode", base.HEX, MODE_VALS),
+	flags_f = ProtoField.uint8("frc_ds_2015.flags", "Flags", base.HEX),
+	flags = {
+		mode = ProtoField.uint8("frc_ds_2015.flags.mode", "Mode", base.HEX, MODE_VALS, 0x3),
+		enabled = ProtoField.bool("frc_ds_2015.flags.enabled", "Enabled", 8, nil, 0x4),
+		emergency_stopped = ProtoField.bool("frc_ds_2015.flags.emergency_stopped", "Emergency Stopped", 8, nil, 0x80)
+	},
+	position = ProtoField.uint8("frc_ds_2015.position", "Position", base.HEX, POSITION_VALS),
 	joystick = {},
 	time_f = ProtoField.bytes("frc_ds_2015.time", "Time"),
 	time = {
@@ -172,7 +177,13 @@ function frc_ds_2015.dissector (buf, pkt, root)
 	subtree = root:add(frc_ds_2015, buf(0))
 
   	subtree:add(fields.pkt_num, buf(0, 2))
-	subtree:add(fields.mode, buf(3, 1))
+	local flags_buf = buf(3, 1)
+	local flags_subtree = subtree:add(fields.flags_f, flags_buf)
+	flags_subtree:add(fields.flags.mode, flags_buf)
+	flags_subtree:add(fields.flags.enabled, flags_buf)
+	flags_subtree:add(fields.flags.emergency_stopped, flags_buf)
+
+	subtree:add(fields.position, buf(5, 1))
 
 	local pos = 6
 	joystick_num = 0
