@@ -42,7 +42,10 @@ for i = 1, 4 do
 		axis = {},
 		button_count = ProtoField.int8("frc_ds_2015.joystick."..i..".button_count", "Button Count", base.DEC),
 		button_f = ProtoField.uint8("frc_ds_2015.joystick."..i..".button", "Buttons", base.HEX),
-		button = {}
+		button = {},
+		pov_hat_count = ProtoField.uint8("frc_ds_2015.joystick."..i..".pov_hat_count", "POV Hat Count", base.DEC),
+		pov_hat_f = ProtoField.bytes("frc_ds_2015.joystick."..i..".pov_hat", "POV Hats"),
+		pov_hat = {}
 	})
 	for a = 1, 6 do
 		table.insert(fields.joystick[i].axis, ProtoField.int8("frc_ds_2015.joystick."..i..".axis."..a, "Axis "..a, base.DEC))
@@ -51,6 +54,9 @@ for i = 1, 4 do
 	for b = 1, 12 do
 		table.insert(fields.joystick[i].button, ProtoField.bool("frc_ds_2015.joystick."..i..".button."..b, "Button "..b, 16, nil, mask))
 		mask = mask * 2
+	end
+	for h = 1, 4 do
+		table.insert(fields.joystick[i].pov_hat, ProtoField.int16("frc_ds_2015.joystick."..i..".pov_hat."..h, "Hat "..h, base.DEC))
 	end
 end
 
@@ -74,7 +80,7 @@ end
 -- Get a month name from its number
 local function get_month(month)
 	local months = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
-	return months[tonumber(month)]
+	return months[tonumber(month) + 1]
 end
 
 local function add_joystick(num, subtree, buf)
@@ -107,6 +113,25 @@ local function add_joystick(num, subtree, buf)
 		local joystick_button_subtree = joystick_subtree:add(joystick_field.button_f, button_buf)
 		for b = 1, math.min(#joystick_field.button, button_count) do
 			joystick_button_subtree:add(joystick_field.button[b], button_buf)
+		end
+	end
+
+	-- POV hat count field
+	local pov_hat_start = button_start + button_byte_count
+	local pov_hat_count_buf = buf(pov_hat_start, 1)
+	local pov_hat_count = pov_hat_count_buf:uint()
+	joystick_subtree:add(joystick_field.pov_hat_count, pov_hat_count_buf)
+
+	-- POV hats
+	if pov_hat_count > 0 then
+		local real_pov_hat_count = math.min(#joystick_field.pov_hat, pov_hat_count)
+		pov_hat_subtree = joystick_subtree:add(joystick_field.pov_hat_f, buf(pov_hat_start + 1, real_pov_hat_count * 2))
+		for h = 0, real_pov_hat_count - 1 do
+			local pov_hat_buf = buf(pov_hat_start + 1 + (2 * h), 2)
+			local pov_hat_field = pov_hat_subtree:add(joystick_field.pov_hat[h + 1], pov_hat_buf)
+			if pov_hat_buf:int() == -1 then
+				pov_hat_field:append_text(" (Not Pressed)")
+			end
 		end
 	end
 end
