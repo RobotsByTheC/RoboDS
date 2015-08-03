@@ -15,7 +15,7 @@ import java.util.HashMap;
  */
 public class DSLayoutNode implements Serializable {
 
-    private Class objectClass;
+    private Class<ControlView> objectClass;
     private HashMap<String, Object> properties;
 
     public DSLayoutNode(Class objectClass, HashMap<String, Object> properties) {
@@ -23,9 +23,9 @@ public class DSLayoutNode implements Serializable {
         this.properties = properties;
     }
 
-    public ControlView inflate(Context context) {
+    public ControlView inflate(Context context, ControlDatabase controlDatabase) {
         try {
-            ControlView controlView = (ControlView) objectClass.getConstructor(Context.class).newInstance(context);
+            ControlView controlView = objectClass.getConstructor(Context.class, ControlDatabase.class).newInstance(context, controlDatabase);
             controlView.readProperties(properties);
             return controlView;
         } catch (InstantiationException e) {

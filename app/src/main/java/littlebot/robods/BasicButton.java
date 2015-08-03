@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -16,17 +15,20 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 
+import littlebot.robods.control.IntegerProperty;
+import littlebot.robods.control.StringProperty;
+
 /**
  * A basic implementation of a square button.
  *
  * @author raystubbs
  * @author Ben Wolsieffer
  */
-public class BasicButton extends ButtonView {
+public class BasicButton extends ButtonControl {
 
-    private static final String TEXT_PROPERTY = "text";
-    private static final String WIDTH_PROPERTY = "width";
-    private static final String HEIGHT_PROPERTY = "height";
+    private final StringProperty text = new StringProperty("Text", "Button");
+    private  final IntegerProperty width = new IntegerProperty("Width", 100);
+    private final IntegerProperty height = new IntegerProperty("Height", 100);
 
     private static final float CORNER_ROUNDNESS = 10;
 
@@ -36,30 +38,19 @@ public class BasicButton extends ButtonView {
     private Paint paint;
     private RectF drawBounds;
 
-    private String text = "Button";
-
     private TextView joyNumTV;
     private TextView buttonNumTV;
     private TextView textTV;
     private TextView widthTV;
     private TextView heightTV;
 
-    public BasicButton(Context context) {
-        super(context);
-        init();
-    }
+    public BasicButton(Context context, ControlDatabase controlDatabase) {
+        super(context, controlDatabase);
 
-    public BasicButton(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
+        addProperty(text);
+        addProperty(width);
+        addProperty(height);
 
-    public BasicButton(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init();
-    }
-
-    private void init() {
         setBackgroundColor(Color.alpha(0));
         paint = new Paint();
         paint.setTextSize(20);
@@ -77,20 +68,19 @@ public class BasicButton extends ButtonView {
 
     @Override
     protected void resetEditDialog() {
-        joyNumTV.setText(Integer.toString(getJoystickNumber()));
-        buttonNumTV.setText(Integer.toString(getButtonNumber()));
+        joyNumTV.setText(Integer.toString(getJoystickIndex()));
+        buttonNumTV.setText(Integer.toString(getButtonIndex()));
         textTV.setText(getText());
-        RelativeLayout.LayoutParams lp = getLayoutParams();
-        widthTV.setText(Integer.toString(lp.width));
-        heightTV.setText(Integer.toString(lp.height));
+        widthTV.setText(Integer.toString(width.getValue()));
+        heightTV.setText(Integer.toString(height.getValue()));
     }
 
     public void setText(String text) {
-        this.text = text;
+        this.text.setValue(text);
     }
 
     public String getText() {
-        return text;
+        return text.getValue();
     }
 
     @Override
@@ -118,6 +108,12 @@ public class BasicButton extends ButtonView {
     }
 
     @Override
+    public void readProperties(HashMap<String, Object> propMap) {
+        super.readProperties(propMap);
+        updateSize();
+    }
+
+    @Override
     public String getControlType() {
         return "Basic Button";
     }
@@ -125,8 +121,8 @@ public class BasicButton extends ButtonView {
     @Override
     public void onEdit(ViewGroup editDialogLayout) {
         try {
-            setJoystickNumber(Integer.parseInt(joyNumTV.getText().toString()));
-            setButtonNumber(Integer.parseInt(buttonNumTV.getText().toString()));
+            setJoystickIndex(Integer.parseInt(joyNumTV.getText().toString()));
+            setButtonIndex(Integer.parseInt(buttonNumTV.getText().toString()));
             setText(textTV.getText().toString());
             setSize(Integer.parseInt(widthTV.getText().toString()), Integer.parseInt(heightTV.getText().toString()));
         } catch (NumberFormatException e) {
@@ -138,26 +134,17 @@ public class BasicButton extends ButtonView {
         }
     }
 
-    @Override
-    public void readProperties(HashMap<String, Object> properties) {
-        super.readProperties(properties);
-        setText((String) properties.get(TEXT_PROPERTY));
-        setSize((Integer) properties.get(WIDTH_PROPERTY), (Integer) properties.get(HEIGHT_PROPERTY));
-    }
-
-    @Override
-    public void writeProperties(HashMap<String, Object> properties) {
-        super.writeProperties(properties);
-        properties.put(TEXT_PROPERTY, getText());
-        properties.put(WIDTH_PROPERTY, getWidth());
-        properties.put(HEIGHT_PROPERTY, getHeight());
+    private void updateSize() {
+        RelativeLayout.LayoutParams lp = getLayoutParams();
+        lp.width = width.getValue();
+        lp.height = height.getValue();
+        requestLayout();
     }
 
     public void setSize(int width, int height) {
-        RelativeLayout.LayoutParams lp = getLayoutParams();
-        getLayoutParams().width = width;
-        getLayoutParams().height = height;
-        requestLayout();
+        this.width.setValue(width);
+        this.height.setValue(height);
+        updateSize();
     }
 
     @Override

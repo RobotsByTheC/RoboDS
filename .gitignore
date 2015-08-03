@@ -38,6 +38,3 @@ proguard/
 
 # Log Files
 *.log
-
-# Private files
-capture/official_ds/

@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.NonNull;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -15,24 +14,26 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 
+import littlebot.robods.control.IntegerProperty;
+
 /**
  * A basic implementation of a round joystick.
  *
  * @author raystubbs
  * @author Ben Wolsieffer
  */
-public class BasicJoystick extends JoystickView {
+public class BasicJoystick extends JoystickControl {
 
     private static final int INNER_COLOR = Color.BLACK,
             OUTER_COLOR = Color.GRAY;
 
-    private static final String RADIUS_PROPERTY = "radius";
+    private final IntegerProperty radius = new IntegerProperty("Radius", 300);
 
-    public static final int MAX_VALUE = 128;
+    public static final float MAX_VALUE = 1.0f;
     private Paint paint;
 
     private float pixelToValueRatio;
-    private int innerRadius, outerRadius, centerRadius = 200;
+    private int innerRadius, outerRadius;
 
     private TextView xJoyNumTV;
     private TextView yJoyNumTV;
@@ -42,26 +43,15 @@ public class BasicJoystick extends JoystickView {
     private CheckBox yInvertedRB;
     private TextView radiusText;
 
-    public BasicJoystick(Context context) {
-        super(context);
-        init();
-    }
+    public BasicJoystick(Context context, ControlDatabase controlDatabase) {
+        super(context, controlDatabase);
 
-    public BasicJoystick(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
+        addProperty(radius);
 
-    public BasicJoystick(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init();
-    }
-
-    private void init() {
         setBackgroundColor(Color.alpha(0));
 
         paint = new Paint();
-        setRadius(centerRadius);
+        setRadius(radius.getValue());
 
         ViewGroup editDialogLayout = (ViewGroup) (LayoutInflater.from(getContext()).inflate(R.layout.dialog_basic_joystick, null));
         xJoyNumTV = (TextView) editDialogLayout.findViewById(R.id.x_joy_num_text);
@@ -76,9 +66,9 @@ public class BasicJoystick extends JoystickView {
     }
 
     protected void resetEditDialog() {
-        xJoyNumTV.setText(Integer.toString(getXJoystickNumber()));
-        yJoyNumTV.setText(Integer.toString(getYJoystickNumber()));
-        xAxisNumTV.setText(Integer.toString(getXAxisNumber()));
+        xJoyNumTV.setText(Integer.toString(getXJoystickIndex()));
+        yJoyNumTV.setText(Integer.toString(getYJoystickIndex()));
+        xAxisNumTV.setText(Integer.toString(getXAxisIndex()));
         xInvertedRB.setChecked(isXInverted());
         yAxisNumTV.setText(Integer.toString(getYAxisNumber()));
         yInvertedRB.setChecked(isYInverted());
@@ -89,22 +79,23 @@ public class BasicJoystick extends JoystickView {
     public void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        centerRadius = Math.min(w, h) / 2;
+        int centerRadius = Math.min(w, h) / 2;
 
         innerRadius = centerRadius / 3;
         outerRadius = centerRadius - innerRadius;
 
-        pixelToValueRatio = (float) MAX_VALUE / outerRadius;
+        pixelToValueRatio = MAX_VALUE / outerRadius;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         paint.setColor(OUTER_COLOR);
+        int centerRadius = radius.getValue();
         canvas.drawCircle(centerRadius, centerRadius, outerRadius, paint);
 
         paint.setColor(INNER_COLOR);
-        float drawX = centerRadius + ((isXInverted()) ? -getXValue() : getXValue()) / pixelToValueRatio;
-        float drawY = centerRadius + ((isYInverted()) ? getYValue() : -getYValue()) / pixelToValueRatio;
+        float drawX = centerRadius + ((isXInverted()) ? -getXAxisValue() : getXAxisValue()) * outerRadius;
+        float drawY = centerRadius + ((isYInverted()) ? getYAxisValue() : -getYAxisValue()) * outerRadius;
         canvas.drawCircle(drawX, drawY, innerRadius, paint);
 
         if (isSelected()) {
@@ -114,14 +105,25 @@ public class BasicJoystick extends JoystickView {
     }
 
     public int getRadius() {
-        return centerRadius;
+        return radius.getValue();
+    }
+
+    private void updateRadius() {
+        ViewGroup.LayoutParams lp = getLayoutParams();
+        lp.width = radius.getValue() * 2;
+        lp.height = radius.getValue() * 2;
+        requestLayout();
     }
 
     public void setRadius(int radius) {
-        ViewGroup.LayoutParams lp = getLayoutParams();
-        lp.width = radius * 2;
-        lp.height = radius * 2;
-        requestLayout();
+        this.radius.setValue(radius);
+        updateRadius();
+    }
+
+    @Override
+    public void readProperties(HashMap<String, Object> propMap) {
+        super.readProperties(propMap);
+        updateRadius();
     }
 
     @Override
@@ -132,11 +134,11 @@ public class BasicJoystick extends JoystickView {
     @Override
     public void onEdit(ViewGroup editDialogLayout) {
         try {
-            setXJoystickNumber(Integer.parseInt(xJoyNumTV.getText().toString()));
-            setYJoystickNumber(Integer.parseInt(yJoyNumTV.getText().toString()));
-            setXAxisNumber(Integer.parseInt(xAxisNumTV.getText().toString()));
+            setXJoystickIndex(Integer.parseInt(xJoyNumTV.getText().toString()));
+            setYJoystickIndex(Integer.parseInt(yJoyNumTV.getText().toString()));
+            setXAxisIndex(Integer.parseInt(xAxisNumTV.getText().toString()));
             setXInverted(xInvertedRB.isChecked());
-            setYAxisNumber(Integer.parseInt(yAxisNumTV.getText().toString()));
+            setYAxisIndex(Integer.parseInt(yAxisNumTV.getText().toString()));
             setYInverted(yInvertedRB.isChecked());
 
             setRadius(Integer.parseInt(radiusText.getText().toString()));
@@ -149,22 +151,11 @@ public class BasicJoystick extends JoystickView {
         }
     }
 
-    @Override
-    public void readProperties(HashMap<String, Object> properties) {
-        super.readProperties(properties);
-        setRadius((Integer) properties.get(RADIUS_PROPERTY));
-    }
-
-    @Override
-    public void writeProperties(HashMap<String, Object> properties) {
-        super.writeProperties(properties);
-        properties.put(RADIUS_PROPERTY, getRadius());
-    }
-
     public boolean onTouchEvent(@NonNull MotionEvent event) {
         if (!isEditing()) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_MOVE:
+                    int centerRadius = radius.getValue();
                     float offsetX = event.getX() - centerRadius;
                     float offsetY = event.getY() - centerRadius;
 
@@ -176,13 +167,13 @@ public class BasicJoystick extends JoystickView {
                         offsetY = outerRadius * (float) Math.sin(angle);
                     }
 
-                    setXValue((int) (offsetX * pixelToValueRatio));
-                    setYValue((int) (-offsetY * pixelToValueRatio));
+                    setXAxisValue(offsetX * pixelToValueRatio);
+                    setYAxisValue(-offsetY * pixelToValueRatio);
 
                     break;
                 case MotionEvent.ACTION_UP:
-                    setXValue(0);
-                    setYValue(0);
+                    setXAxisValue(0);
+                    setYAxisValue(0);
                     break;
             }
             invalidate();

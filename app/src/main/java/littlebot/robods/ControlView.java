@@ -8,17 +8,23 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.AttributeSet;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+
+import littlebot.robods.control.IntegerProperty;
+import littlebot.robods.control.Property;
 
 
 /**
  * A {@link View} for a control or indicator in the driver station interface.
+ * This view cannot be inflated as part of an xml layout to make things easier
+ * and this capability
  *
  * @author raystubbs
  * @author Ben Wolsieffer
@@ -27,40 +33,30 @@ public abstract class ControlView extends View implements View.OnLongClickListen
 
     public static final int SELECTED_COLOR = Color.argb(125, 0, 255, 0);
 
-    private static final String X_POSITION_PROPERTY = "x_pos";
-    private static final String Y_POSITION_PROPERTY = "y_pos";
+    private final ArrayList<Property> properties = new ArrayList<>(3);
 
-    private int xPosition, yPosition;
+    private final IntegerProperty xPosition = new IntegerProperty("X Position", 0);
+    private final IntegerProperty yPosition = new IntegerProperty("Y Position", 0);
 
-    private boolean editing = true;
+    private boolean editing;
     private boolean selected = false;
 
     private SelectedListener selectedListener;
     private EditListener editListener;
-    private ViewGroup editDialogLayout;
     private Dialog editDialog;
+    private ControlDatabase controlDatabase;
 
-    public ControlView(Context context) {
+    public ControlView(Context context, ControlDatabase controlDatabase) {
         super(context);
-        init(editDialogLayout);
-    }
+        this.controlDatabase = controlDatabase;
 
-    public ControlView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(editDialogLayout);
-    }
+        addProperty(xPosition);
+        addProperty(yPosition);
 
-    public ControlView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(editDialogLayout);
-    }
-
-    private void init(ViewGroup editDialogLayout) {
-        this.editDialogLayout = editDialogLayout;
         setBackgroundColor(Color.WHITE);
         setOnLongClickListener(this);
-        setHapticFeedbackEnabled(editing);
-        setLayoutParams(new RelativeLayout.LayoutParams(100, 100));
+        setEditing(false);
+        setLayoutParams(new RelativeLayout.LayoutParams(0, 0));
     }
 
     @Override
@@ -69,8 +65,6 @@ public abstract class ControlView extends View implements View.OnLongClickListen
     public abstract String getControlType();
 
     public void setEditDialogLayout(@Nullable final ViewGroup editDialogLayout) {
-        this.editDialogLayout = editDialogLayout;
-
         if (editDialogLayout != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
@@ -115,6 +109,10 @@ public abstract class ControlView extends View implements View.OnLongClickListen
         selectedListener = l;
     }
 
+    public ControlDatabase getControlDatabase() {
+        return controlDatabase;
+    }
+
     @Override
     public boolean onLongClick(View v) {
         if (editing) {
@@ -156,26 +154,34 @@ public abstract class ControlView extends View implements View.OnLongClickListen
         return new DSLayoutNode(getClass(), properties);
     }
 
-    /**
-     * Read properties for this control from a {@link HashMap}. This is called when a {@link
-     * ControlView} is created from a saved layout. Subclasses should override this method to add
-     * their own properties, but should make sure to call the super-implementation.
-     *
-     * @param properties the property map
-     */
-    public void readProperties(HashMap<String, Object> properties) {
-        setPosition((Integer) properties.get(X_POSITION_PROPERTY), (Integer) properties.get(Y_POSITION_PROPERTY));
+    protected void addProperty(Property property) {
+        properties.add(property);
     }
 
     /**
-     * Write properties from this control to the {@link HashMap}.Subclasses should override this
-     * method to add their own properties, but should make sure to call the super-implementation.
+     * Read properties for this control from a {@link HashMap}. This is called
+     * when a {@link ControlView} is created from a saved layout. Subclasses
+     * should override this method to add their own properties, but should make
+     * sure to call the super-implementation.
      *
-     * @param properties the property map
+     * @param propMap the property map
      */
-    public void writeProperties(HashMap<String, Object> properties) {
-        properties.put(X_POSITION_PROPERTY, getXPosition());
-        properties.put(Y_POSITION_PROPERTY, getYPosition());
+    public void readProperties(HashMap<String, Object> propMap) {
+        for (Property p : properties) {
+            p.read(propMap);
+        }
+        updateControlPosition();
+    }
+
+    /**
+     * Write properties from this control to the {@link HashMap}.
+     *
+     * @param propMap the property map
+     */
+    public void writeProperties(HashMap<String, Object> propMap) {
+        for (Property p : properties) {
+            p.write(propMap);
+        }
     }
 
     @Override
@@ -187,14 +193,29 @@ public abstract class ControlView extends View implements View.OnLongClickListen
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
-
         if (isEditing()) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                setSelected(true);
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    setSelected(true);
+                    break;
+
             }
         }
 
         return super.onTouchEvent(event);
+    }
+
+
+
+    @Override
+    public boolean onDragEvent(DragEvent event) {
+        switch(event.getAction()) {
+            case DragEvent.ACTION_DRAG_ENDED:
+                updatePositionProperties();
+                break;
+        }
+
+        return super.onDragEvent(event);
     }
 
     public interface SelectedListener {
@@ -209,7 +230,7 @@ public abstract class ControlView extends View implements View.OnLongClickListen
      * @return the x position
      */
     public int getXPosition() {
-        return xPosition;
+        return xPosition.getValue();
     }
 
     /**
@@ -218,14 +239,24 @@ public abstract class ControlView extends View implements View.OnLongClickListen
      * @return the y position
      */
     public int getYPosition() {
-        return yPosition;
+        return yPosition.getValue();
+    }
+
+    private void updatePositionProperties() {
+        RelativeLayout.LayoutParams lp = getLayoutParams();
+        xPosition.setValue(lp.leftMargin);
+        yPosition.setValue(lp.topMargin);
+    }
+
+    private void updateControlPosition() {
+        RelativeLayout.LayoutParams lp = getLayoutParams();
+        lp.setMargins(xPosition.getValue(), yPosition.getValue(), -1000000, -1000000);
     }
 
     public void setPosition(int x, int y) {
-        xPosition = x - getWidth() / 2;
-        yPosition = y - getHeight() / 2;
-        RelativeLayout.LayoutParams lp = getLayoutParams();
-        lp.setMargins(xPosition, yPosition, -1000000, -1000000);
+        xPosition.setValue(x - getWidth() / 2);
+        yPosition.setValue(y - getHeight() / 2);
+        updateControlPosition();
         requestLayout();
     }
 

@@ -66,6 +66,10 @@ public class LayoutEditorActivity extends AppCompatActivity {
                 control.setSelectedListener(selectionListener);
                 control.setEditing(true);
             }
+
+            @Override
+            public void controlRemoved(ControlView control) {
+            }
         });
         addButtonMenu = (FloatingActionMenu) findViewById(R.id.editor_add_menu);
         joystickAddButton = (FloatingActionButton) findViewById(R.id.editor_joystick_add_button);
@@ -114,12 +118,12 @@ public class LayoutEditorActivity extends AppCompatActivity {
     }
 
     public void createJoystick(View v) {
-        BasicJoystick joystick = new BasicJoystick(this);
+        BasicJoystick joystick = new BasicJoystick(this, controlLayout.getControlDatabase());
         setupControl(joystick);
     }
 
     public void createButton(View v) {
-        BasicButton button = new BasicButton(this);
+        BasicButton button = new BasicButton(this, controlLayout.getControlDatabase());
         setupControl(button);
     }
 
@@ -132,7 +136,6 @@ public class LayoutEditorActivity extends AppCompatActivity {
     public void deleteControl(MenuItem item) {
         if (selectedView != null) {
             final ControlView deletedControl = selectedView;
-            Animation deleteAnimation = AnimationUtils.loadAnimation(LayoutEditorActivity.this, R.anim.fab_scale_down);
             deletedControl.startAnimation(controlDeleteAnimation);
             controlLayout.removeControl(deletedControl);
             setSelectedControl(null);

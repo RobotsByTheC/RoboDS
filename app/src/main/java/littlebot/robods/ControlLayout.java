@@ -5,10 +5,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.google.common.collect.TreeBasedTable;
+
 /**
- * Created by ben on 6/5/15.
+ * Represents a layout that contains controls.
  */
 public class ControlLayout extends RelativeLayout {
+
+    private static final String TAG = ControlLayout.class.getSimpleName();
+
+    private final TreeBasedTable<Integer, Integer, Float> axes = TreeBasedTable.create();
+    private final TreeBasedTable<Integer, Integer, Boolean> buttons = TreeBasedTable.create();
+    private final TreeBasedTable<Integer, Integer, Integer> povHats = TreeBasedTable.create();
+
+    private final ControlDatabase controlDatabase = new ControlDatabase();
 
     public ControlLayout(Context context) {
         super(context);
@@ -19,7 +29,7 @@ public class ControlLayout extends RelativeLayout {
         removeAllViews();
 
         for (int i = 0; i < layout.getNodeCount(); i++) {
-            ControlView newChild = layout.getLayoutNode(i).inflate(getContext());
+            ControlView newChild = layout.getLayoutNode(i).inflate(getContext(), controlDatabase);
             addControl(newChild);
         }
     }
@@ -36,26 +46,34 @@ public class ControlLayout extends RelativeLayout {
     }
 
     public void addControl(ControlView control) {
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(control.getLayoutParams());
+        RelativeLayout.LayoutParams lp = control.getLayoutParams();
         lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        lp.setMargins((int) control.getXPosition(), (int) control.getYPosition(), -1000000, -1000000);
+        lp.setMargins(control.getXPosition(), control.getYPosition(), -10000000, -10000000);
         control.setLayoutParams(lp);
+        addView(control);
         if (controlListener != null) {
             controlListener.controlAdded(control);
         }
-//        control.requestLayout();
-        addView(control);
     }
 
     public void removeControl(ControlView view) {
         removeView(view);
+        if (controlListener != null) {
+            controlListener.controlRemoved(view);
+        }
+    }
+
+    public ControlDatabase getControlDatabase() {
+        return controlDatabase;
     }
 
     private ControlListener controlListener;
 
     public interface ControlListener {
         void controlAdded(ControlView control);
+
+        void controlRemoved(ControlView control);
     }
 
     public void setControlListener(ControlListener controlListener) {

@@ -1,10 +1,10 @@
 package littlebot.robods.activity;
 
 /**
- * Author:          Ray Stubbs
- * FIRST Team:      2657
+ * Author:          Ray Stubbs FIRST Team:      2657
  * <p/>
- * Permission:      Use this code for whatever you want to, copy, modify, whatever.
+ * Permission:      Use this code for whatever you want to, copy, modify,
+ * whatever.
  */
 
 import android.content.Intent;
@@ -15,25 +15,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.net.DatagramPacket;
-
-import littlebot.robods.ButtonView;
 import littlebot.robods.ConnectionIndicator;
+import littlebot.robods.ControlDatabase;
 import littlebot.robods.ControlLayout;
-import littlebot.robods.ControlView;
 import littlebot.robods.DSLayout;
-import littlebot.robods.DSPacketFactory;
 import littlebot.robods.EnableButton;
-import littlebot.robods.JoystickView;
 import littlebot.robods.LayoutManager;
 import littlebot.robods.ModeSwitch;
-import littlebot.robods.PacketManager;
 import littlebot.robods.R;
-import littlebot.robods.RIOPacketParser;
+import littlebot.robods.communication.DriverStationPacket;
+import littlebot.robods.communication.PacketManager;
+import littlebot.robods.communication.RIOPacketParser;
 
 
 public class DriverStationActivity extends AppCompatActivity {
@@ -44,35 +39,108 @@ public class DriverStationActivity extends AppCompatActivity {
     ConnectionIndicator connectionIndicator;
     EnableButton enableButton;
     ModeSwitch modeSwitch;
-    DSLayout layout;
-    DSPacketFactory packetFactory;
+    DriverStationPacket driverStationPacket;
     RIOPacketParser packetParser;
     PacketManager packetManager;
     ControlLayout controlLayout;
+    private final ControlDatabase.ControlListener controlListener = new ControlDatabase.ControlListener() {
+
+        private DriverStationPacket.Joystick getJoystick(int index) {
+            DriverStationPacket.Joystick j = null;
+            if ((j = driverStationPacket.getJoystick(index)) == null) {
+                j = new DriverStationPacket.Joystick();
+                driverStationPacket.addJoystick(index, j);
+            }
+            return j;
+        }
+
+        @Override
+        public void axisRegistered(int joystickIndex, int axisIndex) {
+            DriverStationPacket.Joystick j = getJoystick(joystickIndex);
+            if (j.getAxisCount() <= axisIndex) {
+                j.setAxisCount(axisIndex + 1);
+            }
+        }
+
+        @Override
+        public void buttonRegistered(int joystickIndex, int buttonIndex) {
+            DriverStationPacket.Joystick j = getJoystick(joystickIndex);
+            if (j.getButtonCount() <= buttonIndex) {
+                j.setButtonCount(buttonIndex + 1);
+            }
+        }
+
+        @Override
+        public void povHatRegistered(int joystickIndex, int povHatIndex) {
+            DriverStationPacket.Joystick j = getJoystick(joystickIndex);
+            if (j.getPOVHatCount() <= povHatIndex) {
+                j.setPOVHatCount(povHatIndex + 1);
+            }
+        }
+
+        @Override
+        public void axisValueChanged(int joystickIndex, int axisIndex, float value) {
+            driverStationPacket.getJoystick(joystickIndex).setAxisValue(axisIndex, value);
+        }
+
+        @Override
+        public void buttonStateChanged(int joystickIndex, int buttonIndex, boolean pressed) {
+            driverStationPacket.getJoystick(joystickIndex).setButtonPressed(buttonIndex, pressed);
+        }
+
+        @Override
+        public void povHatAngleChanged(int joystickIndex, int povHatIndex, int angle) {
+            driverStationPacket.getJoystick(joystickIndex).setPOVHatAngle(povHatIndex, angle);
+        }
+
+        @Override
+        public void axisUnregistered(int joystickIndex, int axisIndex) {
+            DriverStationPacket.Joystick j = driverStationPacket.getJoystick(joystickIndex);
+            if (axisIndex == j.getAxisCount() - 1) {
+                j.setAxisCount(axisIndex);
+            }
+        }
+
+        @Override
+        public void buttonUnregistered(int joystickIndex, int buttonIndex) {
+            DriverStationPacket.Joystick j = driverStationPacket.getJoystick(joystickIndex);
+            if (buttonIndex == j.getButtonCount() - 1) {
+                j.setButtonCount(buttonIndex);
+            }
+        }
+
+        @Override
+        public void povHatUnregistered(int joystickIndex, int povHatIndex) {
+            DriverStationPacket.Joystick j = driverStationPacket.getJoystick(joystickIndex);
+            if (povHatIndex == j.getPOVHatCount() - 1) {
+                j.setPOVHatCount(povHatIndex);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LayoutManager.initialize(this);
-        packetFactory = new DSPacketFactory();
+        driverStationPacket = new DriverStationPacket();
         packetParser = new RIOPacketParser();
-        packetManager = new PacketManager(packetFactory, packetParser);
+        packetManager = new PacketManager(driverStationPacket, packetParser);
         setupLayout();
     }
 
     public void setupLayout() {
         controlLayout = new ControlLayout(this);
+        controlLayout.getControlDatabase().setControlListener(controlListener);
         setContentView(controlLayout);
 
         LayoutManager.getInstance().getCurrentLayout(new LayoutManager.OperationCallback<DSLayout>() {
             @Override
-            public void finished(DSLayout l) {
+            public void finished(final DSLayout layout) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Log.d(TAG, String.valueOf(layout));
                         if (layout != null) {
-
                             controlLayout.load(layout);
 
                             //Set the orientation
@@ -88,11 +156,12 @@ public class DriverStationActivity extends AppCompatActivity {
                             }
                             setRequestedOrientation(requestedOrientation);
                         }
-
-                        registerUserControls(packetFactory, controlLayout);
+                        // Start sending packets.  I put this here because it needs to be called after
+                        // the actionbar is setup, the onStart and onCreate callbacks are called before
+                        // the actionbar is setup.
+                        packetManager.start(layout.getRioIP());
                     }
                 });
-                layout = l;
             }
         });
 
@@ -112,10 +181,6 @@ public class DriverStationActivity extends AppCompatActivity {
         menu.findItem(R.id.action_switch_layout).setIntent(new Intent(this, LayoutSwitcherActivity.class));
         menu.findItem(R.id.action_edit_layout).setIntent(new Intent(this, LayoutEditorActivity.class));
 
-        if (layout == null)
-            return true;
-
-
         ActionBar bar = getSupportActionBar();
         bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 
@@ -128,14 +193,12 @@ public class DriverStationActivity extends AppCompatActivity {
 
         packetManager.setPacketListener(new PacketManager.PacketListener() {
             @Override
-            public void onPacketReceived(DatagramPacket packet) {
+            public void onPacketReceived() {
 
             }
 
             @Override
-            public void onPacketSent(DatagramPacket packet) {
-                byte[] data = packet.getData();
-                setVoltage(data[5], data[6]);
+            public void onPacketSent(DriverStationPacket packet) {
             }
         });
 
@@ -145,35 +208,30 @@ public class DriverStationActivity extends AppCompatActivity {
         enableButton = (EnableButton) controls.findViewById(R.id.enable_button);
         modeSwitch = (ModeSwitch) controls.findViewById(R.id.mode_switch);
 
-        packetFactory.registerEnableButton(enableButton);
-        packetFactory.registerModeSwitch(modeSwitch);
-
 
         enableButton.addEnableListener(new EnableButton.EnableListener() {
             @Override
             public void onEnabled() {
-                if (!packetManager.isRunning())
-                    packetManager.recoverConnection();
+                driverStationPacket.setEnabled(true);
             }
 
             @Override
             public void onDisabled() {
+                driverStationPacket.setEnabled(false);
             }
         });
 
         modeSwitch.setModeChangeListener(new ModeSwitch.ModeChangeListener() {
             @Override
             public void onTeleopEnabled() {
-                if (packetManager.isRunning()) {
-                    enableButton.setEnabled(false);
-                }
+                enableButton.setEnabled(false);
+                driverStationPacket.setMode(DriverStationPacket.Mode.TELEOPERATED);
             }
 
             @Override
             public void onAutoEnabled() {
-                if (packetManager.isRunning()) {
-                    enableButton.setEnabled(false);
-                }
+                enableButton.setEnabled(false);
+                driverStationPacket.setMode(DriverStationPacket.Mode.AUTONOMOUS);
             }
         });
 
@@ -182,28 +240,7 @@ public class DriverStationActivity extends AppCompatActivity {
          */
         setupPacketManagerCallbacks(packetManager, connectionIndicator, enableButton, voltageDisplay);
 
-        /*Start sending packets.  I put this here because it needs to be called after
-        the actionbar is setup, the onStart and onCreate callbacks are called before
-        the actionbar is setup.
-         */
-        packetManager.startSending(layout.getRioIP());
-
         return true;
-    }
-
-    private void registerUserControls(DSPacketFactory pf, ViewGroup content) {
-
-        for (int i = 0; i < content.getChildCount(); i++) {
-            ControlView newChild = (ControlView) content.getChildAt(i);
-            ((ControlView) newChild).setEditing(false);
-
-            if (newChild instanceof JoystickView) {
-                pf.registerJoystick((JoystickView) newChild);
-            } else if (newChild instanceof ButtonView) {
-                pf.registerButton((ButtonView) newChild);
-            }
-
-        }
     }
 
     private void setVoltage(final int whole, final int decimal) {

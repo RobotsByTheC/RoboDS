@@ -1,0 +1,46 @@
+===================================================================================================
+(Without DST, With DST, UTC offset sec) // String that shows up in UI drop down box
+=================================================================================================== 
+("UTC12", "UTC12UDT", -1200) // (GMT-12) International Date Line West 
+("BST11", "BST11BDT", -1100) // (GMT-11) Midway Island, Samoa, Bering Straits 
+("HST10", "HST10HDT", -1000) // (GMT-10) Hawaii, Aleutian Islands 
+("MART9:30", "MART9:30MARDT", -950) // (GMT-9:30) French Polynesia, Marquesas Islands 
+("AST9", "AST9ADT", -900) // (GMT-9) Alaska 
+("PST8", "PST8PDT", -800) // (GMT-8) Pacific Time (US & Canada), Tijuana 
+("MST7", "MST7MDT", -700) // (GMT-7) Mountain Time (US & Canada), Mazatlan 
+("CST6", "CST6CDT", -600) // (GMT-6) Central Time (US & Canada), Mexico City 
+("EST5", "EST5EDT", -500) // (GMT-5) Eastern Time (US & Canada), Bogota, Lima 
+("AST4", "AST4ADT", -400) // (GMT-4) Central Brazil, Santiago, Caracas, La Paz 
+("NST3:30", "NST3:30NDT", -350) // (GMT-3:30) Canada (Newfoundland Standard Time) 
+("GRNLNDST3", "GRNLNDST3GRNLNDDT", -300) // (GMT-3) Greenland, East Brazil, Buenos Aires 
+("FALKST2", "FALKST2FALKDT", -200) // (GMT-2) Falkland Islands, Mid-Atlantic
+("AZOREST1", "AZOREST1AZOREDT", -100) // (GMT-1) Azores, Cape Verde Islands 
+("CUT0", "CUT0GDT", 0) // (UTC) Coordinated Universal Time 
+("GMT0", "GMT0BST", 0) // (GMT) Greenwich Mean Time, London, Lisbon 
+("NFT-1", "NFT-1DFT", 100) // (GMT+1) Continental Europe, West Central Africa 
+("WET-2", "WET-2WET", 200) // (GMT+2) Finland, Athens, Jerusalem, Bucharest 
+("USAST-2", "USAST-2USADT", 200) // (GMT+2) South Africa, Cairo, Istanbul, Beirut 
+("SAUST-3", "SAUST-3SAUDT", 300) // (GMT+3) Saudi Arabia, Kuwait, Iraq, Nairobi 
+("MEST-3", "MEST-3MEDT", 300) // (GMT+3) Moscow, St. Petersburg, Volgograd 
+("IRST-3:30", "IRST-3:30IRDT", 350) // (GMT+3:30) Iran 
+("WST-4", "WST-4WDT", 400) // (GMT+4) Abu Dhabi, Muscat, Baku, Tbilisi, Yerevan 
+("AFT-4:30", "AFT-4:30AFDT", 450) // (GMT+4:30) Afghanistan 
+("PAKST-5", "PAKST-5PAKDT", 500) // (GMT+5) Pakistan, Islamabad, Tashkent, Ekaterinburg 
+("IST-5:30", "IST-5:30IDT", 550) // (GMT+5:30) India, Sri Lanka 
+("NPT-5:45", "NPT-5:45NPDT", 575) // (GMT+5:45) Nepal 
+("TASHST-6", "TASHST-6TASHDT", 600) // (GMT+6) Almaty, Novosibirsk, Astana, Dhaka 
+("MMT-6:30", "MMT-6:30MMDT", 650) // (GMT+6:30) Myanmar, Cocos Islands 
+("THAIST-7", "THAIST-7THAIDT", 700) // (GMT+7) Thailand, Jakarta, Krasnoyarsk 
+("WAUST-8", "WAUST-8WAUDT", 800) // (GMT+8) Western Australia, Kuala Lumpur, Singapore 
+("TAIST-8", "TAIST-8TAIDT", 800) // (GMT+8) Taiwan, Beijing, Hong Kong, Urumqi, Irkutsk 
+("CWST-8:45", "CWST-8:45AW", 875) // (GMT+8:45) Western Australia (Caiguna-Eucla) 
+("JST-9", "JST-9JSTDT", 900) // (GMT+9) Japan 
+("KORST-9", "KORST-9KORDT", 900) // (GMT+9) Korea, Yakutsk 
+("CST-9:30", "CST-9:30AS", 950) // (GMT+9:30) South Australia, Northern Territory, Broken Hill 
+("EET-10", "EET-10EETDT", 1000) // (GMT+10) Eastern Australia, Guam, Hobart 
+("LHST-10:30", "LHST-10:30LH", 1050) // (GMT+10:30) Lord Howe Island 
+("MET-11", "MET-11METDT", 1100) // (GMT+11) Solomon Islands, New Caledonia, Magadan 
+("NFT-11:30", "NFT-11:30NFDT", 1150) // (GMT+11:30) Norfolk Island 
+("NZST-12", "NZST-12NZDT", 1200) // (GMT+12) New Zealand, Fiji, Kamchatka 
+("CHAST-12:45", "CHAST-12:45CHADT", 1275) // (GMT+12:45) New Zealand (Chatham Islands) 
+("TOT-13", "TOT-13TDT", 1300) // (GMT+13:00) Nuku'alofa
