@@ -40,7 +40,6 @@ public class LayoutManager {
     private final Thread operationThread;
     private Handler operationHandler;
     private final ArrayList<String> layouts = new ArrayList<>(2);
-    private final List<String> readOnlyLayouts = Collections.unmodifiableList(layouts);
 
     private static abstract class Operation<Parameter, Result> {
         private static int maxId = 0;
@@ -192,7 +191,7 @@ public class LayoutManager {
      * @param name the name of the layout to get
      * @return the layout, or null if the layout does not exist
      */
-    private DSLayout getLayoutImpl(String name) {
+    private @Nullable DSLayout getLayoutImpl(String name) {
         File layoutFile = getLayoutFile(name);
         DSLayout layout = null;
 
@@ -210,6 +209,7 @@ public class LayoutManager {
                     input.close();
                 }
             } catch (IOException e) {
+                // Whatever...
             }
         }
 
@@ -240,6 +240,7 @@ public class LayoutManager {
                         output.close();
                     }
                 } catch (IOException e) {
+                    // So what...
                 }
             }
             return null;
@@ -295,7 +296,7 @@ public class LayoutManager {
      *
      * @param context a {@link Context} to use to get the files directory
      */
-    public static void initialize(@NonNull Context context) {
+    public static void initialize(@Nullable Context context) {
         if (instance == null) {
             instance = new LayoutManager(context);
         }

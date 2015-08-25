@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".DriverStationActivity" >
 
-    <item android:id="@+id/action_enable"
+    <item android:id="@+id/action_controls"
         android:title="Enable/Disable"
         app:showAsAction="always"
         app:actionLayout="@layout/action_bar_control_actions"/>

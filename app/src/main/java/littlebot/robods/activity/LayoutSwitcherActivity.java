@@ -1,6 +1,6 @@
 package littlebot.robods.activity;
 
-import android.os.Build;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -17,14 +17,13 @@ import java.util.List;
 
 import littlebot.robods.DSLayout;
 import littlebot.robods.LayoutManager;
-import littlebot.robods.LayoutSettingsDialog;
+import littlebot.robods.LayoutSettingsDialogFragment;
 import littlebot.robods.R;
 import littlebot.robods.SwitcherListAdapter;
 
 
 public class LayoutSwitcherActivity extends AppCompatActivity {
 
-    private LayoutSettingsDialog createLayoutDialog;
     private ListView list;
     private FloatingActionButton fab;
     private SwitcherListAdapter switcherListAdapter;
@@ -34,10 +33,7 @@ public class LayoutSwitcherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_switcher);
 
-        createLayoutDialog = new LayoutSettingsDialog(this, true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            createLayoutDialog.create();
-        }
+
         fab = (FloatingActionButton) findViewById(R.id.activity_switcher_fab);
         list = (ListView) findViewById(R.id.switcher_list);
         LayoutManager.getInstance().getLayoutNames(new LayoutManager.OperationCallback<List<String>>() {
@@ -82,13 +78,11 @@ public class LayoutSwitcherActivity extends AppCompatActivity {
 
     public void createLayout(View view) {
         final DSLayout newLayout = new DSLayout();
-        createLayoutDialog.show();
-        createLayoutDialog.fromLayout(newLayout);
-        createLayoutDialog.setOkListener(new View.OnClickListener() {
+        LayoutSettingsDialogFragment createLayoutDialog = LayoutSettingsDialogFragment.newInstance(newLayout, true);
+        createLayoutDialog.show(getFragmentManager(), "RobotChooser");
+        createLayoutDialog.setOkListener(new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                createLayoutDialog.toLayout(newLayout);
-
+            public void onClick(DialogInterface di, int which) {
                 final LayoutManager lm = LayoutManager.getInstance();
                 lm.saveLayout(newLayout, new LayoutManager.OperationCallback<Void>() {
                     @Override
@@ -125,7 +119,7 @@ public class LayoutSwitcherActivity extends AppCompatActivity {
 
         @Override
         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            if(totalItemCount == 0) return;
+            if (totalItemCount == 0) return;
             if (isSameRow(firstVisibleItem)) {
                 int newScrollY = getTopItemScrollY();
                 boolean isSignificantDelta = Math.abs(mLastScrollY - newScrollY) > mScrollThreshold;

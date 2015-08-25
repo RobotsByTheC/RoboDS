@@ -8,8 +8,14 @@
     <style name="dialog_content">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">24dp</item>
-        <item name="android:layout_marginRight">24dp</item>
-        <item name="android:layout_marginBottom">24dp</item>
+        <item name="android:paddingLeft">?android:attr/dialogPreferredPadding</item>
+        <item name="android:paddingRight">?android:attr/dialogPreferredPadding</item>
+        <item name="android:paddingTop">?android:attr/dialogPreferredPadding</item>
+    </style>
+    <style name="simple_dialog_content">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">?android:attr/dialogPreferredPadding</item>
+        <item name="android:paddingBottom">?android:attr/dialogPreferredPadding</item>
     </style>
 </resources>

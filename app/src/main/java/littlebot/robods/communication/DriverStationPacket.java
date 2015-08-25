@@ -316,7 +316,7 @@ public class DriverStationPacket extends FRCPacket {
                 data[offset++] = (byte) povHatCount;
                 for (int i = 0; i < povHatCount; i++) {
                     int angle = povHats.get(i);
-                    int povStart = offset + (2*i);
+                    int povStart = offset + (2 * i);
                     data[povStart] = (byte) (angle >> 8);
                     data[povStart + 1] = (byte) angle;
                 }
@@ -329,7 +329,7 @@ public class DriverStationPacket extends FRCPacket {
         private final Calendar calendar = Calendar.getInstance();
 
         public Time() {
-            super(0x0f, 10, false);
+            super(10, 0x0f, false);
         }
 
         @Override
@@ -411,15 +411,15 @@ public class DriverStationPacket extends FRCPacket {
         private final byte[] timezone;
 
         public Timezone() {
-            super(0x10, 7, false);
+            super(7, 0x10, false);
 
             TimeZone timezone = TimeZone.getDefault();
             int timeOffset = timezone.getRawOffset();
             int absTimeOffset = Math.abs(timeOffset);
-            int timeOffsetHours = (int) TimeUnit.MILLISECONDS.toHours(absTimeOffset);
-            absTimeOffset -= timeOffsetHours;
+            int timeOffsetHours = absTimeOffset / 3600000;
+            absTimeOffset -= timeOffsetHours  * 3600000;
             int timeOffsetMinutes = (int) TimeUnit.MILLISECONDS.toMinutes(absTimeOffset);
-            if (timeOffset < 0) {
+            if (timeOffset > 0) {
                 if (timeOffsetHours != 0) {
                     timeOffsetHours *= -1;
                 } else {

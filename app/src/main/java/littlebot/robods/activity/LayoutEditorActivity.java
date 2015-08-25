@@ -26,7 +26,7 @@ import littlebot.robods.ControlLayout;
 import littlebot.robods.ControlView;
 import littlebot.robods.DSLayout;
 import littlebot.robods.LayoutManager;
-import littlebot.robods.LayoutSettingsDialog;
+import littlebot.robods.LayoutSettingsDialogFragment;
 import littlebot.robods.R;
 
 
@@ -150,13 +150,12 @@ public class LayoutEditorActivity extends AppCompatActivity {
     }
 
     public void showLayoutSettings(MenuItem item) {
-        final LayoutSettingsDialog lsd = new LayoutSettingsDialog(this, false);
-        lsd.setOkListener(new View.OnClickListener() {
+        final LayoutSettingsDialogFragment lsd = LayoutSettingsDialogFragment.newInstance(loadedLayout, false);
+        lsd.setOkListener(new DialogInterface.OnClickListener() {
 
             @Override
-            public void onClick(View view) {
+            public void onClick(DialogInterface di, int which) {
                 final String oldName = loadedLayout.getName();
-                lsd.toLayout(loadedLayout);
                 updateOrientation();
 
                 if (!oldName.equals(loadedLayout.getName())) {
@@ -171,8 +170,7 @@ public class LayoutEditorActivity extends AppCompatActivity {
                 }
             }
         });
-        lsd.show();
-        lsd.fromLayout(loadedLayout);
+        lsd.show(getFragmentManager(), "RobotChooser");
     }
 
     public void clearLayout(MenuItem item) {
